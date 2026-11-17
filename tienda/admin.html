@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/leaflet.css">
 <style>
 :root{
   --bg:#f4f1ec; --surface:#fff; --surface-2:#f0ebe3; --ink:#161616; --muted:#6b645a; --line:#e3dbcd;
@@ -139,6 +140,16 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .status.Entregado{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
 .status.Cancelado{background:var(--surface-2);color:var(--muted)}
 .empty{color:var(--muted);text-align:center;padding:40px 16px}
+.obody{display:grid;grid-template-columns:1fr 300px;gap:16px;margin:10px 0}
+@media (max-width:900px){.obody{grid-template-columns:1fr}}
+.omap{height:170px;border-radius:12px;overflow:hidden;background:var(--surface-2);z-index:0}
+.olinks{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.olinks a{text-decoration:none}
+.cust{font-size:14px;display:grid;gap:3px}
+.cust span{color:var(--muted)}
+.noloc{font-size:13px;color:var(--muted);background:var(--surface-2);border-radius:12px;padding:14px;text-align:center}
+.pin span{position:absolute;left:3px;top:0;width:24px;height:24px;border-radius:50% 50% 50% 0;background:var(--hot);transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+.pin span::after{content:"";position:absolute;inset:6px;border-radius:50%;background:#fff}
 .toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:999px;font-weight:600;opacity:0;transition:.25s;z-index:60;pointer-events:none}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .view{display:none}.view.on{display:block}
@@ -197,7 +208,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
     <!-- PEDIDOS -->
     <section class="view" id="v-pedidos">
       <div class="head"><h1 class="display">Pedidos</h1></div>
-      <p style="color:var(--muted);margin-top:-8px">Los pedidos llegan aquí cuando un cliente envía su bolsa por WhatsApp. Al <b>confirmar</b>, el stock se descuenta automáticamente.</p>
+      <p style="color:var(--muted);margin-top:-8px">Los pedidos llegan aquí cuando un cliente envía su bolsa por WhatsApp. Al <b>confirmar</b>, el stock se descuenta automáticamente. Cada pedido trae el punto exacto que marcó el cliente en el mapa.</p>
       <div id="olist"></div>
     </section>
 
@@ -265,6 +276,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 
 <div class="toast" id="toast" role="status"></div>
 
+<script src="vendor/leaflet.js"></script>
 <script src="cj-data.js"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -294,6 +306,7 @@ function go(v) {
   document.querySelectorAll('nav.side [data-view]').forEach(b => b.setAttribute('aria-current', b.dataset.view === v));
   document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
   window.scrollTo(0, 0);
+  if (v === 'pedidos') setTimeout(initMiniMaps, 30);
 }
 document.querySelectorAll('nav.side [data-view]').forEach(b => b.onclick = () => go(b.dataset.view));
 
@@ -367,6 +380,7 @@ document.addEventListener('click', e => {
   if (t.dataset.toggle) { const p = products.find(p => p.id === t.dataset.toggle); p.active = p.active === false; save(); toast(p.active ? 'Visible en la tienda' : 'Oculta de la tienda'); }
   if (t.hasAttribute('data-new')) openForm(null);
   if (t.dataset.order) orderAction(t.dataset.order, t.dataset.act);
+  if (t.dataset.copy) { navigator.clipboard?.writeText(t.dataset.copy).then(() => toast('✓ Enlace de ubicación copiado'), () => toast(t.dataset.copy)); }
 });
 
 /* formulario de prenda */
@@ -440,10 +454,31 @@ function renderPedidos() {
       ? `<button class="btn sm accent" data-order="${o.id}" data-act="confirm">✓ Confirmar (descuenta stock)</button><button class="btn sm danger" data-order="${o.id}" data-act="cancel">Cancelar</button>`
       : o.status === 'Confirmado' ? `<button class="btn sm" data-order="${o.id}" data-act="deliver">📦 Marcar entregado</button><button class="btn sm danger" data-order="${o.id}" data-act="cancel">Cancelar (devuelve stock)</button>` : '';
     return `<div class="order"><header><div><b>#${o.id.slice(-5).toUpperCase()}</b> · ${new Date(o.date).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}</div><span class="status ${o.status}">${o.status}</span></header>
-      <ul>${o.items.map(i => `<li>${CJ.esc(i.name)} — Talla ${CJ.esc(i.size)} × ${i.qty} · ${CJ.money(i.price * i.qty)}</li>`).join('')}</ul>
-      <div style="font-size:14px;color:var(--muted);margin-bottom:10px">${c ? `${CJ.esc(c.name)} · ${CJ.esc(c.phone)} · ${CJ.esc(c.city)} · ${CJ.esc(c.method)}` : 'Compra rápida desde la ficha de la prenda (datos por WhatsApp)'}</div>
+      <div class="obody"><div>
+        <ul style="margin-top:0">${o.items.map(i => `<li>${CJ.esc(i.name)} — Talla ${CJ.esc(i.size)} × ${i.qty} · ${CJ.money(i.price * i.qty)}</li>`).join('')}</ul>
+        ${c ? `<div class="cust"><div>👤 <b>${CJ.esc(c.name)}</b> · ${CJ.esc(c.phone)}</div><div>🏠 ${CJ.esc(c.address)}, ${CJ.esc(c.city)}</div>${c.refs ? `<div>📝 ${CJ.esc(c.refs)}</div>` : ''}<div><span>💳 ${CJ.esc(c.method)}</span></div></div>
+          <div class="olinks"><a class="btn sm ghost" target="_blank" rel="noopener" href="${CJ.waLink(c.phone, `Hola ${c.name} 👋 te escribimos de CJ sobre tu pedido #${o.id.slice(-5).toUpperCase()}`)}">💬 Escribir al cliente</a></div>`
+          : '<div class="cust"><span>Pedido sin datos de envío (pedido antiguo).</span></div>'}
+      </div><div>
+        ${c && c.lat ? `<div class="omap" data-lat="${+c.lat}" data-lng="${+c.lng}"></div>
+          <div class="olinks"><a class="btn sm ghost" target="_blank" rel="noopener" href="${CJ.mapsLink(+c.lat, +c.lng)}">📍 Ver en Google Maps</a><a class="btn sm ghost" target="_blank" rel="noopener" href="${CJ.directionsLink(+c.lat, +c.lng)}">🧭 Cómo llegar</a><button class="btn sm ghost" data-copy="${CJ.mapsLink(+c.lat, +c.lng)}">📋 Copiar</button></div>`
+          : '<div class="noloc">Sin ubicación en el mapa</div>'}
+      </div></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><b style="margin-right:auto;font-size:18px">${CJ.money(o.total)}</b>${acts}</div></div>`;
   }).join('') : '<div class="empty">Aún no hay pedidos. Cuando un cliente compre desde la tienda aparecerá aquí.</div>';
+  initMiniMaps();
+}
+function initMiniMaps() {
+  if (!window.L) return;
+  document.querySelectorAll('.omap:not(.ready)').forEach(el => {
+    if (!el.offsetWidth) return; // vista oculta: se crea al abrir Pedidos
+    el.classList.add('ready');
+    const ll = [+el.dataset.lat, +el.dataset.lng];
+    const m = L.map(el, { zoomControl: false, attributionControl: false, dragging: true, scrollWheelZoom: false }).setView(ll, 16);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(m);
+    L.marker(ll, { icon: L.divIcon({ className: 'pin', html: '<span></span>', iconSize: [30, 34], iconAnchor: [15, 34] }) }).addTo(m);
+    setTimeout(() => { m.invalidateSize(); m.setView(ll, 16); }, 250);
+  });
 }
 function orderAction(id, act) {
   const o = orders.find(x => x.id === id); if (!o) return;

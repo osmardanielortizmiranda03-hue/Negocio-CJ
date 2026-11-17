@@ -6,3 +6,10 @@
 
 Para probarlo, abre `index.html` en el navegador. Los datos se guardan en ese navegador (prototipo);
 usa "Descargar respaldo" en Ajustes para no perder cambios.
+
+## Ubicación en el mapa
+Al finalizar la compra el cliente marca su casa en un mapa (OpenStreetMap, gratis y sin clave):
+botón "Usar mi ubicación actual", buscador de barrio/dirección, o tocar/arrastrar el puntero.
+El mensaje de WhatsApp incluye el enlace de Google Maps con el punto exacto, y en el panel
+(Pedidos) ves el mapa con botones "Ver en Google Maps", "Cómo llegar" y "Escribir al cliente".
+`vendor/` contiene la librería Leaflet 1.9.4.

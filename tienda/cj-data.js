@@ -584,6 +584,9 @@
     image(p) { return p.image || placeholder(p); },
     money(n) { return '$' + Math.round(Number(n) || 0).toLocaleString('es-CO'); },
     uid(prefix) { return (prefix || 'id') + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); },
+    mapsLink(lat, lng) { return `https://www.google.com/maps?q=${lat},${lng}`; },
+    directionsLink(lat, lng) { return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`; },
+    waLink(phone, text) { let n = String(phone || '').replace(/\D/g, ''); if (n.length === 10) n = '57' + n; return `https://wa.me/${n}` + (text ? `?text=${encodeURIComponent(text)}` : ''); },
     esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); },
     onChange(fn) { window.addEventListener('storage', e => { if (Object.values(K).includes(e.key)) fn(); }); },
   };

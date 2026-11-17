@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="vendor/leaflet.css">
 <style>
 :root{
   --bg:#f7f3ec; --surface:#ffffff; --surface-2:#efe9df; --ink:#141414; --muted:#6b645a; --line:#e3dbcd;
@@ -149,6 +150,23 @@ section.catalog{padding:40px 0 64px}
 .field input,.field select,.field textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-weight:400}
 .checkout{display:none;flex-direction:column;gap:10px}
 .checkout.show{display:flex}
+.drawer.checking .items{flex:none;max-height:150px}
+.drawer.checking footer{flex:1;overflow:auto}
+.loc{border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.loc-title{font-size:14px;font-weight:700;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.loc-title small{font-weight:500;color:var(--muted)}
+.loc-search{display:flex;gap:6px}
+.loc-search input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 10px}
+.mini-btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 12px;font-weight:600;font-size:14px;white-space:nowrap}
+.mini-btn.dark{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#map{height:230px;border-radius:10px;overflow:hidden;background:var(--surface-2);z-index:0}
+.loc-msg{font-size:13px;color:var(--muted);min-height:18px}
+.loc-msg.ok{color:var(--ok);font-weight:600}
+.loc-msg.err{color:var(--hot);font-weight:600}
+.loc.need{border-color:var(--hot);box-shadow:0 0 0 3px color-mix(in srgb,var(--hot) 20%,transparent)}
+.pin span{position:absolute;left:3px;top:0;width:28px;height:28px;border-radius:50% 50% 50% 0;background:var(--hot);transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.35)}
+.pin span::after{content:"";position:absolute;inset:7px;border-radius:50%;background:#fff}
+.pin.unset span{background:#8b8d91}
 .toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:999px;font-weight:600;opacity:0;transition:.25s;z-index:60;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
@@ -259,7 +277,19 @@ footer.site a{color:var(--accent)}
       <label class="field">Nombre completo<input name="name" required autocomplete="name"></label>
       <label class="field">Celular / WhatsApp<input name="phone" required inputmode="tel" autocomplete="tel"></label>
       <label class="field">Ciudad<input name="city" required autocomplete="address-level2"></label>
-      <label class="field">Dirección<input name="address" required autocomplete="street-address"></label>
+      <label class="field">Dirección<input name="address" required autocomplete="street-address" placeholder="Calle 10 # 20-30"></label>
+      <div class="loc" id="locBox">
+        <div class="loc-title">📍 Marca tu casa en el mapa <small>obligatorio</small></div>
+        <button type="button" class="mini-btn dark" id="geoBtn">🎯 Usar mi ubicación actual</button>
+        <div class="loc-search">
+          <input id="locQ" placeholder="O busca tu barrio o dirección" aria-label="Buscar dirección en el mapa">
+          <button type="button" class="mini-btn" id="locGo">Buscar</button>
+        </div>
+        <div id="map" aria-label="Mapa para marcar tu ubicación"></div>
+        <div class="loc-msg" id="locMsg">Toca el mapa o arrastra el puntero hasta la puerta de tu casa.</div>
+        <input type="hidden" name="lat"><input type="hidden" name="lng">
+      </div>
+      <label class="field">Referencias para el domiciliario<input name="refs" placeholder="Apto, torre, color de la casa, al lado de…"></label>
       <label class="field">Método de pago
         <select name="method"><option>Pago Anticipado</option><option>Pago Contra-Entrega</option></select>
       </label>
@@ -271,6 +301,7 @@ footer.site a{color:var(--accent)}
 
 <div class="toast" id="toast" role="status"></div>
 
+<script src="vendor/leaflet.js"></script>
 <script src="cj-data.js"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -374,7 +405,7 @@ function renderCart() {
   }).join('') : '<div class="empty">Tu bolsa está vacía.<br>¡Mira la colección y elige tu próximo outfit!</div>';
   $('#total').textContent = CJ.money(total);
   $('#goCheckout').disabled = !cart.length;
-  if (!cart.length) { $('#checkout').classList.remove('show'); $('#goCheckout').hidden = false; }
+  if (!cart.length) { $('#checkout').classList.remove('show'); $('#drawer').classList.remove('checking'); $('#goCheckout').hidden = false; }
 }
 
 function sendOrder(lines, customer) {
@@ -384,7 +415,8 @@ function sendOrder(lines, customer) {
   const txt = [`🛍️ *Nuevo pedido CJ* (#${order.id.slice(-5).toUpperCase()})`, '',
     ...lines.map(l => `• ${l.name} — Talla ${l.size} × ${l.qty} = ${CJ.money(l.price * l.qty)}`), '',
     `*Total: ${CJ.money(total)}*`,
-    customer ? `\n👤 ${customer.name}\n📱 ${customer.phone}\n📍 ${customer.address}, ${customer.city}\n💳 ${customer.method}` : ''].join('\n');
+    customer ? `\n👤 ${customer.name}\n📱 ${customer.phone}\n🏠 ${customer.address}, ${customer.city}${customer.refs ? `\n📝 ${customer.refs}` : ''}\n💳 ${customer.method}` : '',
+    customer && customer.lat ? `\n📍 *Ubicación exacta:*\n${CJ.mapsLink(customer.lat, customer.lng)}` : ''].join('\n');
   window.open(`https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(txt)}`, '_blank', 'noopener');
 }
 
@@ -405,15 +437,77 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') hideAll(); }
 $('#qMinus').onclick = () => { state.qty = Math.max(1, state.qty - 1); updatePD(); };
 $('#qPlus').onclick = () => { if (state.size) state.qty = Math.min(available(state.current, state.size), state.qty + 1); updatePD(); };
 $('#addBtn').onclick = () => { addToCart(); hideAll(); toast(`✓ ${state.current.name} (${state.size}) agregado a tu bolsa`); };
-$('#buyNow').onclick = () => { const p = state.current; sendOrder([{ id: p.id, name: p.name, size: state.size, qty: state.qty, price: p.price }], null); hideAll(); };
+$('#buyNow').onclick = () => { addToCart(); hideAll(); show('#drawer'); openCheckout(); };
 $('#openCart').onclick = () => { renderCart(); show('#drawer'); };
-$('#goCheckout').onclick = () => { $('#checkout').classList.add('show'); $('#goCheckout').hidden = true; $('#checkout [name=name]').focus(); };
+function openCheckout() {
+  $('#checkout').classList.add('show'); $('#drawer').classList.add('checking'); $('#goCheckout').hidden = true;
+  initMap(); $('#checkout [name=name]').focus({ preventScroll: true });
+}
+$('#goCheckout').onclick = openCheckout;
+
+/* ===== Mapa de ubicación (Leaflet + OpenStreetMap) ===== */
+const DEFAULT_CENTER = [4.6486, -74.0880]; // Bogotá
+let map = null, marker = null, pinSet = false;
+function locMsg(text, cls) { const m = $('#locMsg'); m.textContent = text; m.className = 'loc-msg ' + (cls || ''); }
+function initMap() {
+  if (map) { setTimeout(() => map.invalidateSize(), 60); return; }
+  if (!window.L) { $('#map').hidden = true; locMsg('El mapa no cargó. Usa el botón "Usar mi ubicación actual".'); return; }
+  map = L.map('map', { zoomControl: true, attributionControl: true }).setView(DEFAULT_CENTER, 12);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  const icon = L.divIcon({ className: 'pin unset', html: '<span></span>', iconSize: [34, 40], iconAnchor: [17, 40] });
+  marker = L.marker(DEFAULT_CENTER, { draggable: true, icon, keyboard: false }).addTo(map);
+  marker.on('dragend', () => setPin(marker.getLatLng(), false));
+  map.on('click', e => setPin(e.latlng, false));
+  setTimeout(() => map.invalidateSize(), 260);
+}
+function setPin(ll, zoom) {
+  const lat = +(ll.lat ?? ll[0]), lng = +(ll.lng ?? ll[1]);
+  if (marker) { marker.setLatLng([lat, lng]); marker.getElement()?.classList.remove('unset'); }
+  if (map && zoom) map.setView([lat, lng], 17);
+  pinSet = true;
+  const f = $('#checkout'); f.lat.value = lat.toFixed(6); f.lng.value = lng.toFixed(6);
+  $('#locBox').classList.remove('need');
+  locMsg('✓ Ubicación marcada. Si no es exacta, arrastra el puntero.', 'ok');
+}
+function centerOn(lat, lng, z) { if (map) map.setView([lat, lng], z); if (marker && !pinSet) marker.setLatLng([lat, lng]); }
+async function geocode(q) {
+  const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=co&q=' + encodeURIComponent(q);
+  const r = await fetch(url, { headers: { 'Accept-Language': 'es' } });
+  const d = await r.json(); return d[0] ? { lat: +d[0].lat, lng: +d[0].lon } : null;
+}
+$('#geoBtn').onclick = () => {
+  if (!navigator.geolocation) return locMsg('Tu navegador no permite compartir ubicación. Mueve el puntero en el mapa.', 'err');
+  locMsg('Buscando tu ubicación…');
+  navigator.geolocation.getCurrentPosition(
+    p => { setPin([p.coords.latitude, p.coords.longitude], true); if (p.coords.accuracy > 60) locMsg(`✓ Ubicación aproximada (±${Math.round(p.coords.accuracy)} m). Ajusta el puntero a tu puerta.`, 'ok'); },
+    () => locMsg('No pudimos obtener tu ubicación. Busca tu barrio o toca el mapa.', 'err'),
+    { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
+};
+async function searchPlace() {
+  const f = $('#checkout'), q = $('#locQ').value.trim() || f.address.value.trim();
+  if (!q) return locMsg('Escribe tu barrio o dirección para buscar.', 'err');
+  locMsg('Buscando…');
+  try {
+    const r = await geocode(q + (f.city.value ? ', ' + f.city.value : '') + ', Colombia');
+    if (!r) return locMsg('No encontramos esa dirección. Prueba con el barrio o toca el mapa.', 'err');
+    setPin([r.lat, r.lng], true); locMsg('✓ Encontrado. Ahora ajusta el puntero exactamente a tu casa.', 'ok');
+  } catch (e) { locMsg('La búsqueda no está disponible ahora. Toca el mapa o usa tu ubicación.', 'err'); }
+}
+$('#locGo').onclick = searchPlace;
+$('#locQ').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); searchPlace(); } });
+$('#checkout').city.addEventListener('change', async e => {
+  if (pinSet || !e.target.value.trim()) return;
+  try { const r = await geocode(e.target.value + ', Colombia'); if (r) centerOn(r.lat, r.lng, 13); } catch (err) {}
+});
+
 $('#checkout').onsubmit = e => {
   e.preventDefault();
+  if (!pinSet) { $('#locBox').classList.add('need'); $('#locBox').scrollIntoView({ behavior: 'smooth', block: 'center' }); return locMsg('Marca en el mapa dónde vives para poder enviarte el pedido.', 'err'); }
   const customer = Object.fromEntries(new FormData(e.target));
   const lines = cart.map(c => { const p = products.find(x => x.id === c.id); return { id: p.id, name: p.name, size: c.size, qty: c.qty, price: p.price }; });
   sendOrder(lines, customer);
   cart = []; CJ.saveCart(cart); renderCart(); e.target.reset(); hideAll();
+  pinSet = false; marker?.getElement()?.classList.add('unset'); locMsg('Toca el mapa o arrastra el puntero hasta la puerta de tu casa.');
   toast('¡Pedido enviado! Te confirmamos por WhatsApp 🙌');
 };
 const onSearch = e => { state.q = e.target.value; $('#q').value = $('#qm').value = state.q; renderGrid(); };
