@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CJ Panel Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ec; --surface:#fff; --surface-2:#f0ebe3; --ink:#161616; --muted:#6b645a; --line:#e3dbcd;
+  --accent:#b8893b; --accent-ink:#fff; --hot:#c7402b; --ok:#2f7a4b; --warn:#b7791f; --side:#141414; --side-ink:#efe9df;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111; --surface:#1b1b1b; --surface-2:#242220; --ink:#f1ece4; --muted:#a39b8e; --line:#2e2b27;
+    --accent:#d4a650; --accent-ink:#141414; --hot:#ef6a52; --ok:#5fbf83; --warn:#e0a84a; --side:#0a0a0a; --side-ink:#efe9df;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111; --surface:#1b1b1b; --surface-2:#242220; --ink:#f1ece4; --muted:#a39b8e; --line:#2e2b27;
+  --accent:#d4a650; --accent-ink:#141414; --hot:#ef6a52; --ok:#5fbf83; --warn:#e0a84a; --side:#0a0a0a; --side-ink:#efe9df;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.display{font-family:Anton,Impact,sans-serif;text-transform:uppercase;letter-spacing:.02em;font-weight:400}
+.logo{font-family:Anton,Impact,sans-serif;font-size:30px;letter-spacing:.04em}
+.logo b{color:var(--accent);font-weight:400}
+
+/* login */
+.login{min-height:100vh;display:grid;place-items:center;padding:16px;background:var(--side);color:var(--side-ink)}
+.login form{width:min(360px,100%);display:flex;flex-direction:column;gap:14px;text-align:center}
+.login input{height:52px;border-radius:14px;border:1px solid #333;background:#1d1d1d;color:#fff;text-align:center;font-size:22px;letter-spacing:.4em}
+.login .hint{font-size:13px;opacity:.6}
+.login .err{color:#ef6a52;min-height:20px;font-size:14px}
+
+/* layout */
+.app{display:none;min-height:100vh;grid-template-columns:230px 1fr}
+.app.on{display:grid}
+nav.side{background:var(--side);color:var(--side-ink);padding:20px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh}
+nav.side .logo{padding:0 8px 16px}
+nav.side button,nav.side a{display:flex;align-items:center;gap:10px;border:0;background:none;color:inherit;text-decoration:none;padding:11px 12px;border-radius:10px;font-weight:600;text-align:left;opacity:.75}
+nav.side button[aria-current="true"]{background:rgba(255,255,255,.08);opacity:1}
+nav.side button:hover,nav.side a:hover{opacity:1}
+nav.side .spacer{flex:1}
+nav.side .pill{margin-left:auto;background:var(--hot);color:#fff;border-radius:10px;font-size:11px;padding:1px 7px}
+main{padding:28px;min-width:0}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.head h1{margin:0;font-size:36px;line-height:1}
+@media (max-width:820px){
+  .app{grid-template-columns:1fr}
+  nav.side{position:sticky;top:0;height:auto;flex-direction:row;overflow-x:auto;padding:10px 12px;z-index:10;gap:4px}
+  nav.side .logo{padding:0 8px 0 0;font-size:24px;align-self:center}
+  nav.side .spacer{display:none}
+  nav.side button,nav.side a{flex:none;padding:8px 10px;font-size:14px}
+  main{padding:18px 16px}
+  .head h1{font-size:28px}
+}
+
+.btn{border:0;border-radius:12px;padding:10px 16px;font-weight:700;background:var(--ink);color:var(--bg);display:inline-flex;align-items:center;gap:6px;min-height:42px}
+.btn.accent{background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.btn.danger{background:transparent;color:var(--hot);border:1px solid currentColor}
+.btn.sm{padding:6px 10px;min-height:34px;font-size:13px;border-radius:9px}
+
+/* resumen */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+.kpi small{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.kpi div{font-size:26px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi.good div{color:var(--ok)}
+.kpi.bad div{color:var(--hot)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px}
+.panel h2{margin:0 0 12px;font-size:18px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:980px){.two{grid-template-columns:1fr}}
+.bar-row{display:grid;grid-template-columns:130px 1fr 44px;gap:10px;align-items:center;font-size:14px;margin:6px 0}
+.bar{height:10px;border-radius:5px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:5px}
+.alert-row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.alert-row:last-child{border:0}
+
+/* tabla prendas */
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.filters input,.filters select{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 12px;min-height:42px}
+.filters input{flex:1;min-width:180px}
+.plist{display:flex;flex-direction:column;gap:12px}
+.prow{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;display:grid;grid-template-columns:76px 1fr auto;gap:14px;align-items:center}
+.prow.off{opacity:.55}
+.prow img{width:76px;height:92px;object-fit:cover;border-radius:10px;background:var(--surface-2)}
+.prow h3{margin:0;font-size:16px}
+.prow .meta{color:var(--muted);font-size:13px;display:flex;gap:10px;flex-wrap:wrap;margin:2px 0 8px}
+.stocks{display:flex;gap:6px;flex-wrap:wrap}
+.st{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}
+.st b{padding:0 8px;background:var(--surface-2);align-self:stretch;display:flex;align-items:center}
+.st button{border:0;background:none;width:28px;height:30px;font-size:16px}
+.st span{min-width:22px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.st.zero span{color:var(--hot)}
+.st.low span{color:var(--warn)}
+.prow .acts{display:flex;flex-direction:column;gap:6px}
+@media (max-width:640px){.prow{grid-template-columns:60px 1fr}.prow img{width:60px;height:74px}.prow .acts{grid-column:1/-1;flex-direction:row}.prow .acts .btn{flex:1;justify-content:center}}
+.chipx{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--surface-2)}
+.chipx.out{background:color-mix(in srgb,var(--hot) 15%,transparent);color:var(--hot)}
+.chipx.star{background:color-mix(in srgb,var(--accent) 20%,transparent);color:var(--accent)}
+
+/* formulario */
+dialog{border:0;border-radius:20px;padding:0;width:min(720px,calc(100% - 24px));max-height:calc(100% - 24px);background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.form{padding:22px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form h2{grid-column:1/-1;margin:0;font-size:28px}
+.f{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:13px}
+.f.full{grid-column:1/-1}
+.f input,.f select,.f textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-weight:400;font-size:15px}
+.f textarea{min-height:70px;resize:vertical}
+.photo{grid-column:1/-1;display:flex;gap:14px;align-items:center}
+.photo img{width:110px;height:132px;object-fit:cover;border-radius:12px;background:var(--surface-2)}
+.photo label.btn{cursor:pointer}
+.sizes-ed{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
+.sz{display:grid;grid-template-columns:1fr 1fr 40px;gap:8px}
+.sz input{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 10px}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.checks{grid-column:1/-1;display:flex;gap:18px;flex-wrap:wrap}
+.checks label{display:flex;gap:6px;align-items:center;font-weight:600}
+.form .foot{grid-column:1/-1;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px}
+.margin-note{grid-column:1/-1;font-size:13px;color:var(--muted);margin-top:-6px}
+@media (max-width:560px){.form{grid-template-columns:1fr}}
+
+/* pedidos */
+.order{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.order header{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.order ul{margin:10px 0;padding-left:18px;font-size:14px}
+.status{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px}
+.status.Pendiente{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.status.Confirmado{background:color-mix(in srgb,var(--accent) 18%,transparent);color:var(--accent)}
+.status.Entregado{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.status.Cancelado{background:var(--surface-2);color:var(--muted)}
+.empty{color:var(--muted);text-align:center;padding:40px 16px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:999px;font-weight:600;opacity:0;transition:.25s;z-index:60;pointer-events:none}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.view{display:none}.view.on{display:block}
+.settings{display:grid;gap:14px;max-width:560px}
+</style>
+</head>
+<body>
+
+<section class="login" id="login">
+  <form id="loginForm">
+    <div class="logo" style="font-size:64px">C<b>J</b></div>
+    <div class="display" style="font-size:22px">Panel administrativo</div>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" aria-label="PIN">
+    <button class="btn accent" style="justify-content:center">Entrar</button>
+    <div class="err" id="loginErr"></div>
+    <div class="hint">PIN de prueba: 1234 (cámbialo en Ajustes)</div>
+  </form>
+</section>
+
+<div class="app" id="app">
+  <nav class="side">
+    <div class="logo">C<b>J</b></div>
+    <button data-view="resumen" aria-current="true">📊 Resumen</button>
+    <button data-view="prendas">👕 Prendas</button>
+    <button data-view="pedidos">🧾 Pedidos <span class="pill" id="pendPill" hidden></span></button>
+    <button data-view="ajustes">⚙️ Ajustes</button>
+    <div class="spacer"></div>
+    <a href="index.html" target="_blank">🛍️ Ver tienda</a>
+    <button id="logout">↩ Salir</button>
+  </nav>
+
+  <main>
+    <!-- RESUMEN -->
+    <section class="view on" id="v-resumen">
+      <div class="head"><h1 class="display">Resumen</h1><button class="btn accent" data-new>+ Nueva prenda</button></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="two">
+        <div class="panel"><h2>Unidades por categoría</h2><div id="byCat"></div></div>
+        <div class="panel"><h2>⚠️ Alertas de stock</h2><div id="alerts"></div></div>
+      </div>
+    </section>
+
+    <!-- PRENDAS -->
+    <section class="view" id="v-prendas">
+      <div class="head"><h1 class="display">Prendas</h1><button class="btn accent" data-new>+ Nueva prenda</button></div>
+      <div class="filters">
+        <input id="pq" type="search" placeholder="Buscar prenda…" aria-label="Buscar">
+        <select id="pcat" aria-label="Categoría"></select>
+        <select id="pstate" aria-label="Estado">
+          <option value="">Todas</option><option value="out">Agotadas</option><option value="low">Pocas unidades</option><option value="off">Ocultas</option>
+        </select>
+      </div>
+      <div class="plist" id="plist"></div>
+    </section>
+
+    <!-- PEDIDOS -->
+    <section class="view" id="v-pedidos">
+      <div class="head"><h1 class="display">Pedidos</h1></div>
+      <p style="color:var(--muted);margin-top:-8px">Los pedidos llegan aquí cuando un cliente envía su bolsa por WhatsApp. Al <b>confirmar</b>, el stock se descuenta automáticamente.</p>
+      <div id="olist"></div>
+    </section>
+
+    <!-- AJUSTES -->
+    <section class="view" id="v-ajustes">
+      <div class="head"><h1 class="display">Ajustes</h1></div>
+      <form class="panel settings" id="settingsForm">
+        <label class="f">Número de WhatsApp (con indicativo, sin +)<input name="whatsapp" inputmode="numeric" placeholder="573001234567"></label>
+        <label class="f">Frase principal de la tienda<input name="tagline"></label>
+        <label class="f">Nota de envíos<input name="shippingNote"></label>
+        <label class="f">PIN del panel<input name="adminPin" inputmode="numeric"></label>
+        <div><button class="btn accent">Guardar ajustes</button></div>
+      </form>
+      <div class="panel settings">
+        <h2>Respaldo de datos</h2>
+        <p style="margin:0;color:var(--muted);font-size:14px">En este prototipo los datos viven en este navegador. Descarga un respaldo seguido y súbelo en otro equipo si lo necesitas.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn ghost" id="exportBtn">⬇ Descargar respaldo</button>
+          <label class="btn ghost" style="cursor:pointer">⬆ Cargar respaldo<input type="file" id="importFile" accept="application/json" hidden></label>
+          <button class="btn danger" id="resetBtn">Restaurar inventario original</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<dialog id="dlg">
+  <form class="form" id="pform" method="dialog">
+    <h2 class="display" id="formTitle">Nueva prenda</h2>
+    <div class="photo">
+      <img id="fImg" alt="Foto de la prenda">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <label class="btn ghost">📷 Subir foto<input type="file" accept="image/*" id="fFile" hidden></label>
+        <button type="button" class="btn sm ghost" id="fNoImg">Quitar foto</button>
+      </div>
+    </div>
+    <label class="f full">Nombre de la prenda<input name="name" required placeholder="Ej: Set Blanco Old Money"></label>
+    <label class="f">Categoría<input name="category" list="catList" required placeholder="Conjuntos"><datalist id="catList"></datalist></label>
+    <label class="f">Precio de venta (COP)<input name="price" type="number" min="0" step="1000" required></label>
+    <label class="f">Precio de costo (COP)<input name="cost" type="number" min="0" step="100"></label>
+    <div class="f"><span>&nbsp;</span><div class="margin-note" id="marginNote" style="margin:0"></div></div>
+    <label class="f full">Descripción (opcional)<textarea name="description" placeholder="Tela, ajuste, cómo combinarla…"></textarea></label>
+    <div class="sizes-ed">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <strong>Tallas y unidades</strong>
+        <div class="quick">
+          <button type="button" class="btn sm ghost" data-preset="S,M,L,XL">S–XL</button>
+          <button type="button" class="btn sm ghost" data-preset="28,30,32,34,36">28–36</button>
+          <button type="button" class="btn sm ghost" id="addSize">+ Talla</button>
+        </div>
+      </div>
+      <div id="sizeRows"></div>
+    </div>
+    <div class="checks">
+      <label><input type="checkbox" name="featured"> ⭐ Destacada</label>
+      <label><input type="checkbox" name="active" checked> Visible en la tienda</label>
+    </div>
+    <div class="foot">
+      <button type="button" class="btn danger" id="delBtn" style="margin-right:auto">Eliminar</button>
+      <button type="button" class="btn ghost" id="cancelBtn">Cancelar</button>
+      <button class="btn accent" id="saveBtn">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="cj-data.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+let products = CJ.getProducts(), orders = CJ.getOrders(), settings = CJ.getSettings();
+let editing = null, formImage = '';
+const LOW = 2;
+
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
+function save() {
+  if (!CJ.saveProducts(products)) toast('⚠️ Espacio lleno: usa fotos más livianas o elimina algunas');
+  renderAll();
+}
+
+/* acceso */
+let authed = false;
+try { authed = sessionStorage.getItem('cj_admin') === '1'; } catch (e) {}
+function enter() { $('#login').style.display = 'none'; $('#app').classList.add('on'); renderAll(); }
+$('#loginForm').onsubmit = e => {
+  e.preventDefault();
+  if ($('#pin').value === CJ.getSettings().adminPin) { try { sessionStorage.setItem('cj_admin', '1'); } catch (e) {} enter(); }
+  else { $('#loginErr').textContent = 'PIN incorrecto'; $('#pin').value = ''; }
+};
+$('#logout').onclick = () => { try { sessionStorage.removeItem('cj_admin'); } catch (e) {} location.reload(); };
+
+/* navegación */
+function go(v) {
+  document.querySelectorAll('nav.side [data-view]').forEach(b => b.setAttribute('aria-current', b.dataset.view === v));
+  document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('nav.side [data-view]').forEach(b => b.onclick = () => go(b.dataset.view));
+
+/* resumen */
+function renderResumen() {
+  const units = products.reduce((a, p) => a + CJ.totalStock(p), 0);
+  const costVal = products.reduce((a, p) => a + CJ.totalStock(p) * (p.cost || 0), 0);
+  const saleVal = products.reduce((a, p) => a + CJ.totalStock(p) * p.price, 0);
+  const outCount = products.filter(p => CJ.totalStock(p) === 0).length;
+  const sold = orders.filter(o => o.status === 'Confirmado' || o.status === 'Entregado').reduce((a, o) => a + o.total, 0);
+  const pend = orders.filter(o => o.status === 'Pendiente').length;
+  $('#kpis').innerHTML = [
+    ['Prendas', products.length], ['Unidades en stock', units],
+    ['Inventario (costo)', CJ.money(costVal)], ['Inventario (venta)', CJ.money(saleVal)],
+    ['Ganancia potencial', CJ.money(saleVal - costVal), 'good'], ['Agotadas', outCount, outCount ? 'bad' : ''],
+    ['Pedidos pendientes', pend, pend ? 'bad' : ''], ['Ventas confirmadas', CJ.money(sold), 'good'],
+  ].map(([l, v, c]) => `<div class="kpi ${c || ''}"><small>${l}</small><div>${v}</div></div>`).join('');
+
+  const cats = {};
+  products.forEach(p => cats[p.category] = (cats[p.category] || 0) + CJ.totalStock(p));
+  const max = Math.max(1, ...Object.values(cats));
+  $('#byCat').innerHTML = Object.entries(cats).sort((a, b) => b[1] - a[1])
+    .map(([c, n]) => `<div class="bar-row"><span>${CJ.esc(c)}</span><div class="bar"><i style="width:${n / max * 100}%"></i></div><b style="text-align:right">${n}</b></div>`).join('');
+
+  const alerts = [];
+  products.forEach(p => p.sizes.forEach(s => { if (s.stock <= LOW) alerts.push({ p, s }); }));
+  alerts.sort((a, b) => a.s.stock - b.s.stock);
+  $('#alerts').innerHTML = alerts.length ? alerts.slice(0, 12).map(({ p, s }) =>
+    `<div class="alert-row"><span>${CJ.esc(p.name)} · <b>${CJ.esc(s.size)}</b></span><span class="chipx ${s.stock ? '' : 'out'}">${s.stock ? s.stock + ' und.' : 'Agotado'}</span></div>`).join('')
+    + (alerts.length > 12 ? `<div class="alert-row"><span style="color:var(--muted)">+ ${alerts.length - 12} tallas más</span></div>` : '')
+    : '<div class="empty">Todo en orden 👌</div>';
+}
+
+/* prendas */
+function renderCatsSelect() {
+  const cats = [...new Set(products.map(p => p.category))].sort();
+  const cur = $('#pcat').value;
+  $('#pcat').innerHTML = '<option value="">Todas las categorías</option>' + cats.map(c => `<option>${CJ.esc(c)}</option>`).join('');
+  $('#pcat').value = cats.includes(cur) ? cur : '';
+  $('#catList').innerHTML = cats.map(c => `<option value="${CJ.esc(c)}">`).join('');
+}
+function renderPrendas() {
+  const q = $('#pq').value.toLowerCase(), c = $('#pcat').value, st = $('#pstate').value;
+  const list = products.filter(p => (!q || p.name.toLowerCase().includes(q)) && (!c || p.category === c) &&
+    (!st || (st === 'out' && CJ.totalStock(p) === 0) || (st === 'low' && p.sizes.some(s => s.stock > 0 && s.stock <= LOW)) || (st === 'off' && p.active === false)));
+  $('#plist').innerHTML = list.length ? list.map(p => {
+    const total = CJ.totalStock(p);
+    return `<div class="prow ${p.active === false ? 'off' : ''}">
+      <img src="${CJ.image(p)}" alt="">
+      <div style="min-width:0">
+        <h3>${CJ.esc(p.name)} ${p.featured ? '<span class="chipx star">⭐ Destacada</span>' : ''} ${p.active === false ? '<span class="chipx">Oculta</span>' : ''}</h3>
+        <div class="meta"><span>${CJ.esc(p.category)}</span><span>Venta <b>${CJ.money(p.price)}</b></span><span>Costo ${CJ.money(p.cost)}</span><span class="chipx ${total ? '' : 'out'}">${total} und.</span></div>
+        <div class="stocks">${p.sizes.map((s, i) => `<span class="st ${s.stock === 0 ? 'zero' : s.stock <= LOW ? 'low' : ''}"><b>${CJ.esc(s.size)}</b><button data-dec="${p.id}|${i}" aria-label="Restar ${CJ.esc(s.size)}">−</button><span>${s.stock}</span><button data-inc="${p.id}|${i}" aria-label="Sumar ${CJ.esc(s.size)}">+</button></span>`).join('') || '<span style="color:var(--muted);font-size:13px">Sin tallas</span>'}</div>
+      </div>
+      <div class="acts">
+        <button class="btn sm ghost" data-edit="${p.id}">✏️ Editar</button>
+        <button class="btn sm ghost" data-toggle="${p.id}">${p.active === false ? '👁 Mostrar' : '🙈 Ocultar'}</button>
+      </div></div>`;
+  }).join('') : '<div class="empty">No hay prendas con ese filtro.</div>';
+}
+['#pq', '#pcat', '#pstate'].forEach(s => $(s).addEventListener('input', renderPrendas));
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.inc || t.dataset.dec) {
+    const [id, i] = (t.dataset.inc || t.dataset.dec).split('|');
+    const s = products.find(p => p.id === id).sizes[+i];
+    s.stock = Math.max(0, s.stock + (t.dataset.inc ? 1 : -1)); save();
+  }
+  if (t.dataset.edit) openForm(products.find(p => p.id === t.dataset.edit));
+  if (t.dataset.toggle) { const p = products.find(p => p.id === t.dataset.toggle); p.active = p.active === false; save(); toast(p.active ? 'Visible en la tienda' : 'Oculta de la tienda'); }
+  if (t.hasAttribute('data-new')) openForm(null);
+  if (t.dataset.order) orderAction(t.dataset.order, t.dataset.act);
+});
+
+/* formulario de prenda */
+function sizeRow(size = '', stock = 0) {
+  const d = document.createElement('div'); d.className = 'sz';
+  d.innerHTML = `<input placeholder="Talla" value="${CJ.esc(size)}" aria-label="Talla"><input type="number" min="0" value="${stock}" aria-label="Unidades"><button type="button" class="btn sm ghost" aria-label="Quitar talla">×</button>`;
+  d.querySelector('button').onclick = () => d.remove();
+  $('#sizeRows').append(d);
+}
+function openForm(p) {
+  editing = p; const f = $('#pform'); f.reset();
+  $('#formTitle').textContent = p ? 'Editar prenda' : 'Nueva prenda';
+  $('#delBtn').hidden = !p;
+  $('#sizeRows').innerHTML = '';
+  formImage = p ? p.image || '' : '';
+  if (p) {
+    ['name', 'category', 'price', 'cost', 'description'].forEach(k => f[k].value = p[k] ?? '');
+    f.featured.checked = !!p.featured; f.active.checked = p.active !== false;
+    p.sizes.forEach(s => sizeRow(s.size, s.stock));
+  } else { ['S', 'M', 'L', 'XL'].forEach(s => sizeRow(s, 0)); }
+  updatePreview(); updateMargin(); $('#dlg').showModal();
+}
+function updatePreview() {
+  const f = $('#pform');
+  $('#fImg').src = formImage || CJ.image({ name: f.name.value, category: f.category.value });
+  $('#fNoImg').hidden = !formImage;
+}
+function updateMargin() {
+  const f = $('#pform'), pr = +f.price.value, co = +f.cost.value;
+  $('#marginNote').textContent = pr && co ? `Ganas ${CJ.money(pr - co)} por prenda (${Math.round((pr - co) / pr * 100)}% de margen)` : '';
+}
+$('#pform').addEventListener('input', e => { if (['price', 'cost'].includes(e.target.name)) updateMargin(); if (['name', 'category'].includes(e.target.name) && !formImage) updatePreview(); });
+$('#addSize').onclick = () => sizeRow();
+document.querySelectorAll('[data-preset]').forEach(b => b.onclick = () => {
+  const existing = [...$('#sizeRows').querySelectorAll('.sz input:first-child')].map(i => i.value.toUpperCase());
+  b.dataset.preset.split(',').filter(s => !existing.includes(s)).forEach(s => sizeRow(s, 0));
+});
+$('#fFile').onchange = e => {
+  const file = e.target.files[0]; if (!file) return;
+  const img = new Image(), url = URL.createObjectURL(file);
+  img.onload = () => {
+    const max = 700, k = Math.min(1, max / Math.max(img.width, img.height));
+    const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    formImage = c.toDataURL('image/jpeg', .8); URL.revokeObjectURL(url); updatePreview();
+  };
+  img.src = url; e.target.value = '';
+};
+$('#fNoImg').onclick = () => { formImage = ''; updatePreview(); };
+$('#cancelBtn').onclick = () => $('#dlg').close();
+$('#delBtn').onclick = () => {
+  if (!editing || !confirm(`¿Eliminar "${editing.name}" definitivamente?`)) return;
+  products = products.filter(p => p !== editing); save(); $('#dlg').close(); toast('Prenda eliminada');
+};
+$('#pform').onsubmit = e => {
+  e.preventDefault(); const f = e.target;
+  const sizes = [...$('#sizeRows').children].map(r => { const [a, b] = r.querySelectorAll('input'); return { size: a.value.trim().toUpperCase(), stock: Math.max(0, parseInt(b.value) || 0) }; }).filter(s => s.size);
+  const data = { name: f.name.value.trim(), category: f.category.value.trim(), price: +f.price.value || 0, cost: +f.cost.value || 0,
+    description: f.description.value.trim(), featured: f.featured.checked, active: f.active.checked, image: formImage, sizes };
+  if (editing) Object.assign(editing, data); else products.unshift({ id: CJ.uid('p'), ...data });
+  save(); $('#dlg').close(); toast(editing ? '✓ Cambios guardados' : '✓ Prenda agregada a la tienda');
+};
+
+/* pedidos */
+function renderPedidos() {
+  const pend = orders.filter(o => o.status === 'Pendiente').length;
+  $('#pendPill').hidden = !pend; $('#pendPill').textContent = pend;
+  $('#olist').innerHTML = orders.length ? orders.map(o => {
+    const c = o.customer;
+    const acts = o.status === 'Pendiente'
+      ? `<button class="btn sm accent" data-order="${o.id}" data-act="confirm">✓ Confirmar (descuenta stock)</button><button class="btn sm danger" data-order="${o.id}" data-act="cancel">Cancelar</button>`
+      : o.status === 'Confirmado' ? `<button class="btn sm" data-order="${o.id}" data-act="deliver">📦 Marcar entregado</button><button class="btn sm danger" data-order="${o.id}" data-act="cancel">Cancelar (devuelve stock)</button>` : '';
+    return `<div class="order"><header><div><b>#${o.id.slice(-5).toUpperCase()}</b> · ${new Date(o.date).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}</div><span class="status ${o.status}">${o.status}</span></header>
+      <ul>${o.items.map(i => `<li>${CJ.esc(i.name)} — Talla ${CJ.esc(i.size)} × ${i.qty} · ${CJ.money(i.price * i.qty)}</li>`).join('')}</ul>
+      <div style="font-size:14px;color:var(--muted);margin-bottom:10px">${c ? `${CJ.esc(c.name)} · ${CJ.esc(c.phone)} · ${CJ.esc(c.city)} · ${CJ.esc(c.method)}` : 'Compra rápida desde la ficha de la prenda (datos por WhatsApp)'}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><b style="margin-right:auto;font-size:18px">${CJ.money(o.total)}</b>${acts}</div></div>`;
+  }).join('') : '<div class="empty">Aún no hay pedidos. Cuando un cliente compre desde la tienda aparecerá aquí.</div>';
+}
+function orderAction(id, act) {
+  const o = orders.find(x => x.id === id); if (!o) return;
+  const apply = sign => o.items.forEach(i => { const s = products.find(p => p.id === i.id)?.sizes.find(s => s.size === i.size); if (s) s.stock = Math.max(0, s.stock + sign * i.qty); });
+  if (act === 'confirm') {
+    const short = o.items.filter(i => (products.find(p => p.id === i.id)?.sizes.find(s => s.size === i.size)?.stock ?? 0) < i.qty);
+    if (short.length && !confirm(`No hay suficiente stock de: ${short.map(i => i.name + ' ' + i.size).join(', ')}. ¿Confirmar de todos modos?`)) return;
+    apply(-1); o.status = 'Confirmado'; toast('Pedido confirmado · stock actualizado');
+  }
+  if (act === 'deliver') { o.status = 'Entregado'; toast('¡Pedido entregado! 🎉'); }
+  if (act === 'cancel') { if (o.status === 'Confirmado') apply(1); o.status = 'Cancelado'; toast('Pedido cancelado'); }
+  CJ.saveOrders(orders); save();
+}
+
+/* ajustes */
+function renderAjustes() { const f = $('#settingsForm'); ['whatsapp', 'tagline', 'shippingNote', 'adminPin'].forEach(k => f[k].value = settings[k]); }
+$('#settingsForm').onsubmit = e => {
+  e.preventDefault(); const f = e.target;
+  ['whatsapp', 'tagline', 'shippingNote', 'adminPin'].forEach(k => settings[k] = f[k].value.trim());
+  settings.whatsapp = settings.whatsapp.replace(/\D/g, ''); if (!settings.adminPin) settings.adminPin = '1234';
+  CJ.saveSettings(settings); renderAjustes(); toast('✓ Ajustes guardados');
+};
+$('#exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify({ products, orders, settings }, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `cj-respaldo-${new Date().toISOString().slice(0, 10)}.json`; a.click();
+};
+$('#importFile').onchange = async e => {
+  try {
+    const d = JSON.parse(await e.target.files[0].text());
+    if (!Array.isArray(d.products)) throw 0;
+    products = d.products; orders = d.orders || []; settings = Object.assign(CJ.getSettings(), d.settings || {});
+    CJ.saveOrders(orders); CJ.saveSettings(settings); save(); renderAjustes(); toast('✓ Respaldo cargado');
+  } catch (err) { toast('Archivo no válido'); }
+  e.target.value = '';
+};
+$('#resetBtn').onclick = () => {
+  if (!confirm('Esto borra tus cambios y pedidos y vuelve al inventario del Excel. ¿Continuar?')) return;
+  CJ.resetAll(); products = CJ.getProducts(); orders = []; settings = CJ.getSettings(); renderAjustes(); renderAll(); toast('Inventario restaurado');
+};
+
+function renderAll() { renderCatsSelect(); renderResumen(); renderPrendas(); renderPedidos(); renderAjustes(); }
+CJ.onChange(() => { products = CJ.getProducts(); orders = CJ.getOrders(); renderAll(); });
+if (authed) enter();
+</script>
+</body>
+</html>

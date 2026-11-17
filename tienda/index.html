@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CJ Tienda Virtual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f3ec; --surface:#ffffff; --surface-2:#efe9df; --ink:#141414; --muted:#6b645a; --line:#e3dbcd;
+  --accent:#b8893b; --accent-ink:#ffffff; --hot:#d2462f; --ok:#2f7a4b; --shadow:0 10px 30px rgba(20,20,20,.08);
+  --hero-bg:#141414; --hero-ink:#f7f3ec;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121212; --surface:#1c1c1c; --surface-2:#252320; --ink:#f3eee6; --muted:#a59d90; --line:#2f2c27;
+    --accent:#d4a650; --accent-ink:#141414; --hot:#ef6a52; --ok:#5fbf83; --shadow:0 10px 30px rgba(0,0,0,.4);
+    --hero-bg:#0a0a0a; --hero-ink:#f3eee6;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121212; --surface:#1c1c1c; --surface-2:#252320; --ink:#f3eee6; --muted:#a59d90; --line:#2f2c27;
+  --accent:#d4a650; --accent-ink:#141414; --hot:#ef6a52; --ok:#5fbf83; --shadow:0 10px 30px rgba(0,0,0,.4);
+  --hero-bg:#0a0a0a; --hero-ink:#f3eee6;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:1200px;margin:0 auto;padding:0 16px}
+.display{font-family:Anton,Impact,sans-serif;letter-spacing:.02em;text-transform:uppercase;font-weight:400}
+
+/* barra superior */
+.ticker{background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:600;overflow:hidden;white-space:nowrap}
+.ticker span{display:inline-block;padding:8px 0;animation:tick 28s linear infinite}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.ticker span{animation:none}}
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;height:64px}
+.logo{font-family:Anton,Impact,sans-serif;font-size:34px;line-height:1;text-decoration:none;color:var(--ink);letter-spacing:.04em}
+.logo b{color:var(--accent);font-weight:400}
+.search{flex:1;max-width:420px;margin-left:auto;position:relative}
+.search input{width:100%;height:42px;border-radius:999px;border:1px solid var(--line);background:var(--surface);padding:0 16px 0 40px}
+.search svg{position:absolute;left:14px;top:12px;width:18px;height:18px;color:var(--muted)}
+#openCart{margin-left:auto}
+.icon-btn{position:relative;height:42px;min-width:42px;border-radius:999px;border:1px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 12px;font-weight:600}
+.icon-btn svg{width:20px;height:20px}
+.badge{position:absolute;top:-6px;right:-6px;background:var(--hot);color:#fff;font-size:11px;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:grid;place-items:center;padding:0 5px}
+.badge[hidden]{display:none}
+
+/* héroe */
+.hero{background:var(--hero-bg);color:var(--hero-ink);overflow:hidden;position:relative}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center;padding-top:48px;padding-bottom:48px}
+.hero h1{font-size:clamp(48px,9vw,112px);line-height:.9;margin:0}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{font-size:18px;opacity:.85;max-width:440px;margin:18px 0 26px}
+.cta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:14px 26px;font-weight:700;text-decoration:none;font-size:16px}
+.cta.ghost{background:transparent;color:inherit;border:1px solid currentColor;margin-left:8px}
+.hero-art{display:grid;grid-template-columns:1fr 1fr;gap:12px;transform:rotate(-4deg)}
+.hero-art img{border-radius:18px;aspect-ratio:1;object-fit:cover;background:var(--surface-2)}
+.hero-art img:nth-child(2){margin-top:36px}
+.hero-art img:nth-child(3){margin-top:-36px}
+.perks{display:flex;gap:20px;flex-wrap:wrap;margin-top:28px;font-size:14px;opacity:.85}
+.perks div{display:flex;align-items:center;gap:6px}
+@media (max-width:760px){
+  .hero .wrap{grid-template-columns:1fr;padding-top:32px}
+  .hero-art{order:-1;grid-template-columns:repeat(4,1fr);transform:none}
+  .hero-art img:nth-child(n){margin-top:0}
+  .search{display:none}
+  .search.mobile{display:block;max-width:none;margin:12px 0 0}
+}
+@media (min-width:761px){.search.mobile{display:none}}
+
+/* catálogo */
+section.catalog{padding:40px 0 64px}
+.cat-head{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.cat-head h2{font-size:clamp(32px,5vw,48px);margin:0;line-height:1}
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.toolbar{display:flex;gap:12px;align-items:center;justify-content:space-between;margin:14px 0 22px;color:var(--muted);font-size:14px;flex-wrap:wrap}
+.toolbar select{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px}
+.toolbar label{display:flex;gap:6px;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px}
+@media (max-width:520px){.grid{grid-template-columns:1fr 1fr;gap:12px}}
+.card{background:var(--surface);border-radius:18px;overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s;text-align:left;padding:0}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.card .ph{position:relative;aspect-ratio:4/5;background:var(--surface-2);overflow:hidden}
+.card .ph img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.card:hover .ph img{transform:scale(1.04)}
+.tag{position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:999px;background:var(--ink);color:var(--bg)}
+.tag.hot{background:var(--hot);color:#fff}
+.tag.out{background:var(--surface);color:var(--muted)}
+.card .info{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px;flex:1}
+.card .cat{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.card h3{margin:0;font-size:16px;font-weight:600;line-height:1.3}
+.card .price{font-weight:700;font-size:18px;margin-top:auto}
+.card .sizes{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.card .sizes span{font-size:11px;border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--muted)}
+.card .sizes span.no{text-decoration:line-through;opacity:.5}
+.card.soldout .ph img{filter:grayscale(1);opacity:.6}
+.empty{text-align:center;padding:48px 16px;color:var(--muted)}
+
+/* modal y drawer */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.modal{position:fixed;z-index:50;left:50%;top:50%;transform:translate(-50%,-46%);opacity:0;pointer-events:none;transition:.25s;width:min(900px,calc(100% - 32px));max-height:calc(100% - 32px);overflow:auto;background:var(--surface);border-radius:22px;box-shadow:var(--shadow)}
+.modal.open{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}
+.pd{display:grid;grid-template-columns:1fr 1fr}
+.pd img{width:100%;height:100%;object-fit:cover;aspect-ratio:4/5;background:var(--surface-2)}
+.pd .body{padding:28px;display:flex;flex-direction:column;gap:14px}
+.pd h2{margin:0;font-size:36px;line-height:1}
+.pd .price{font-size:26px;font-weight:700}
+.pd .desc{color:var(--muted);margin:0}
+.size-grid{display:flex;gap:8px;flex-wrap:wrap}
+.size-btn{min-width:52px;height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);font-weight:700}
+.size-btn[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.size-btn:disabled{opacity:.35;text-decoration:line-through;cursor:not-allowed}
+.stock-note{font-size:14px;color:var(--muted);min-height:21px}
+.stock-note.low{color:var(--hot);font-weight:600}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.qty button{width:42px;height:44px;border:0;background:var(--surface-2);font-size:20px}
+.qty span{min-width:42px;text-align:center;font-weight:700}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{border:0;border-radius:14px;padding:14px 20px;font-weight:700;background:var(--ink);color:var(--bg);flex:1;min-height:48px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.wa{background:#25d366;color:#0b2914}
+.close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:0;background:var(--surface);box-shadow:var(--shadow);font-size:22px;z-index:2}
+@media (max-width:700px){.pd{grid-template-columns:1fr}.pd img{aspect-ratio:1}.pd .body{padding:20px}.pd h2{font-size:28px}}
+
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--surface);z-index:50;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
+.drawer.open{transform:none}
+.drawer header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line)}
+.drawer header h2{margin:0;font-size:28px}
+.drawer .items{flex:1;overflow:auto;padding:12px 20px}
+.ci{display:grid;grid-template-columns:72px 1fr auto;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);align-items:center}
+.ci img{width:72px;height:88px;object-fit:cover;border-radius:10px;background:var(--surface-2)}
+.ci h4{margin:0;font-size:15px}
+.ci small{color:var(--muted)}
+.ci .rm{border:0;background:none;color:var(--muted);font-size:13px;text-decoration:underline;padding:0}
+.drawer footer{padding:16px 20px 20px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.total{display:flex;justify-content:space-between;font-size:18px;font-weight:700}
+.field{display:flex;flex-direction:column;gap:4px;font-size:14px;font-weight:600}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:10px 12px;font-weight:400}
+.checkout{display:none;flex-direction:column;gap:10px}
+.checkout.show{display:flex}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:999px;font-weight:600;opacity:0;transition:.25s;z-index:60;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+footer.site{background:var(--hero-bg);color:var(--hero-ink);padding:40px 0;font-size:14px}
+footer.site .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+footer.site a{color:var(--accent)}
+.fab{position:fixed;right:18px;bottom:18px;width:58px;height:58px;border-radius:50%;background:#25d366;display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:30}
+.fab svg{width:30px;height:30px;fill:#fff}
+</style>
+</head>
+<body>
+<div class="ticker" aria-hidden="true"><span id="ticker"></span></div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#">C<b>J</b></a>
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Busca sets, polos, pantalones…" aria-label="Buscar prendas">
+    </label>
+    <button class="icon-btn" id="openCart" aria-label="Abrir carrito">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7h12l-1 13H7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+      <span class="badge" id="cartCount" hidden>0</span>
+    </button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <h1 class="display">Viste <em>diferente.</em><br>Viste CJ.</h1>
+      <p id="tagline"></p>
+      <a class="cta" href="#catalogo">Ver colección →</a><a class="cta ghost" href="#catalogo" data-jump="Conjuntos">Sets</a>
+      <div class="perks">
+        <div>🚚 Envíos nacionales</div><div>💳 Contra-entrega</div><div>💬 Pedidos por WhatsApp</div>
+      </div>
+    </div>
+    <div class="hero-art" id="heroArt"></div>
+  </div>
+</section>
+
+<section class="catalog" id="catalogo">
+  <div class="wrap">
+    <div class="cat-head">
+      <h2 class="display">La colección</h2>
+    </div>
+    <label class="search mobile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="qm" type="search" placeholder="Busca prendas…" aria-label="Buscar prendas">
+    </label>
+    <div class="chips" id="chips" role="toolbar" aria-label="Categorías"></div>
+    <div class="toolbar">
+      <span id="count"></span>
+      <div class="row">
+        <label><input type="checkbox" id="onlyStock" checked> Solo disponibles</label>
+        <select id="sort" aria-label="Ordenar">
+          <option value="feat">Destacados</option>
+          <option value="low">Precio: menor a mayor</option>
+          <option value="high">Precio: mayor a menor</option>
+          <option value="name">Nombre</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <div><span class="logo" style="color:inherit;font-size:28px">C<b>J</b></span><div id="shipNote" style="opacity:.75;margin-top:6px"></div></div>
+    <div style="opacity:.6">© <span id="yr"></span> CJ · Prototipo · <a href="admin.html">Panel administrativo</a></div>
+  </div>
+</footer>
+
+<a class="fab" id="fab" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.6 14.2c-.2.7-1.4 1.3-2 1.3-.5.1-1.2.1-1.9-.1a17 17 0 0 1-1.7-.6 13.4 13.4 0 0 1-5.2-4.6c-.4-.5-1-1.5-1-2.8s.7-2 .9-2.3c.3-.3.6-.3.8-.3h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.3.5-.4.5c-.1.1-.3.3-.1.6.2.3.8 1.3 1.6 2.1 1.1 1 2 1.3 2.3 1.4.3.2.5.1.6 0l.9-1c.2-.3.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.1.1.6-.1 1.3z"/></svg>
+</a>
+
+<div class="scrim" id="scrim"></div>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="pdName">
+  <button class="close" data-close aria-label="Cerrar">×</button>
+  <div class="pd">
+    <img id="pdImg" alt="">
+    <div class="body">
+      <div class="card" style="border:0;padding:0;background:none"><span class="cat" id="pdCat"></span></div>
+      <h2 class="display" id="pdName"></h2>
+      <div class="price" id="pdPrice"></div>
+      <p class="desc" id="pdDesc"></p>
+      <div><strong>Elige tu talla</strong></div>
+      <div class="size-grid" id="pdSizes"></div>
+      <div class="stock-note" id="pdStock"></div>
+      <div class="row">
+        <div class="qty"><button id="qMinus" aria-label="Menos">−</button><span id="qVal">1</span><button id="qPlus" aria-label="Más">+</button></div>
+        <button class="btn" id="addBtn" disabled>Elige una talla</button>
+      </div>
+      <button class="btn wa" id="buyNow" disabled>Pedir ya por WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<aside class="drawer" id="drawer" aria-label="Carrito">
+  <header><h2 class="display">Tu bolsa</h2><button class="icon-btn" data-close aria-label="Cerrar">×</button></header>
+  <div class="items" id="items"></div>
+  <footer>
+    <div class="total"><span>Total</span><span id="total">$0</span></div>
+    <form class="checkout" id="checkout">
+      <label class="field">Nombre completo<input name="name" required autocomplete="name"></label>
+      <label class="field">Celular / WhatsApp<input name="phone" required inputmode="tel" autocomplete="tel"></label>
+      <label class="field">Ciudad<input name="city" required autocomplete="address-level2"></label>
+      <label class="field">Dirección<input name="address" required autocomplete="street-address"></label>
+      <label class="field">Método de pago
+        <select name="method"><option>Pago Anticipado</option><option>Pago Contra-Entrega</option></select>
+      </label>
+      <button class="btn wa" type="submit">Enviar pedido por WhatsApp</button>
+    </form>
+    <button class="btn" id="goCheckout">Finalizar compra</button>
+  </footer>
+</aside>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="cj-data.js"></script>
+<script>
+const $ = s => document.querySelector(s);
+const state = { cat: 'Todo', q: '', current: null, size: null, qty: 1 };
+let products = [], settings = {}, cart = [];
+
+function load() {
+  products = CJ.getProducts().filter(p => p.active !== false);
+  settings = CJ.getSettings();
+  cart = CJ.getCart();
+}
+
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function renderStatic() {
+  $('#tagline').textContent = settings.tagline;
+  $('#shipNote').textContent = settings.shippingNote;
+  $('#yr').textContent = new Date().getFullYear();
+  const msg = `✦ ${settings.shippingNote} ✦ Nuevos sets cada semana ✦ Escríbenos y te asesoramos con tu talla `;
+  $('#ticker').textContent = msg.repeat(6);
+  $('#fab').href = `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent('Hola CJ 👋 quiero información sobre sus prendas')}`;
+  const feat = products.filter(p => p.featured).concat(products).filter((p, i, a) => a.indexOf(p) === i).slice(0, 4);
+  $('#heroArt').innerHTML = feat.map(p => `<img src="${CJ.image(p)}" alt="${CJ.esc(p.name)}">`).join('');
+}
+
+function renderChips() {
+  const cats = ['Todo', ...new Set(products.map(p => p.category))];
+  $('#chips').innerHTML = cats.map(c => `<button class="chip" aria-pressed="${c === state.cat}" data-cat="${CJ.esc(c)}">${CJ.esc(c)}</button>`).join('');
+}
+
+function renderGrid() {
+  const q = state.q.trim().toLowerCase();
+  let list = products.filter(p =>
+    (state.cat === 'Todo' || p.category === state.cat) &&
+    (!q || (p.name + ' ' + p.category + ' ' + (p.description || '')).toLowerCase().includes(q)) &&
+    (!$('#onlyStock').checked || CJ.totalStock(p) > 0));
+  const s = $('#sort').value;
+  list.sort((a, b) => s === 'low' ? a.price - b.price : s === 'high' ? b.price - a.price : s === 'name' ? a.name.localeCompare(b.name)
+    : (b.featured - a.featured) || (CJ.totalStock(b) > 0) - (CJ.totalStock(a) > 0));
+  $('#count').textContent = `${list.length} ${list.length === 1 ? 'prenda' : 'prendas'}`;
+  if (!list.length) { $('#grid').innerHTML = `<div class="empty" style="grid-column:1/-1">No encontramos prendas con ese filtro.<br>Prueba otra categoría o búsqueda.</div>`; return; }
+  $('#grid').innerHTML = list.map(p => {
+    const total = CJ.totalStock(p);
+    const tag = total === 0 ? '<span class="tag out">Agotado</span>' : total <= 2 ? '<span class="tag hot">¡Últimas!</span>' : p.featured ? '<span class="tag">Top ventas</span>' : '';
+    return `<button class="card ${total === 0 ? 'soldout' : ''}" data-id="${p.id}">
+      <div class="ph"><img loading="lazy" src="${CJ.image(p)}" alt="${CJ.esc(p.name)}">${tag}</div>
+      <div class="info"><span class="cat">${CJ.esc(p.category)}</span><h3>${CJ.esc(p.name)}</h3>
+      <div class="sizes">${p.sizes.map(s => `<span class="${s.stock > 0 ? '' : 'no'}">${CJ.esc(s.size)}</span>`).join('')}</div>
+      <div class="price">${CJ.money(p.price)}</div></div></button>`;
+  }).join('');
+}
+
+function inCart(id, size) { return cart.filter(c => c.id === id && c.size === size).reduce((a, c) => a + c.qty, 0); }
+function available(p, size) { const s = p.sizes.find(x => x.size === size); return s ? Math.max(0, s.stock - inCart(p.id, size)) : 0; }
+
+function openProduct(id) {
+  const p = products.find(x => x.id === id); if (!p) return;
+  state.current = p; state.size = null; state.qty = 1;
+  $('#pdImg').src = CJ.image(p); $('#pdImg').alt = p.name;
+  $('#pdCat').textContent = p.category; $('#pdName').textContent = p.name;
+  $('#pdPrice').textContent = CJ.money(p.price);
+  $('#pdDesc').textContent = p.description || 'Prenda seleccionada por CJ. Tela cómoda, corte moderno y lista para combinar.';
+  $('#pdSizes').innerHTML = p.sizes.map(s => `<button class="size-btn" data-size="${CJ.esc(s.size)}" ${s.stock > 0 ? '' : 'disabled'} aria-pressed="false">${CJ.esc(s.size)}</button>`).join('');
+  updatePD(); show('#modal');
+}
+function updatePD() {
+  const p = state.current;
+  document.querySelectorAll('.size-btn').forEach(b => b.setAttribute('aria-pressed', b.dataset.size === state.size));
+  const note = $('#pdStock'); note.className = 'stock-note';
+  if (!state.size) { note.textContent = CJ.totalStock(p) ? '' : 'Esta prenda está agotada por ahora. Escríbenos y te avisamos cuando llegue.'; }
+  else {
+    const a = available(p, state.size);
+    state.qty = Math.min(Math.max(1, state.qty), Math.max(1, a));
+    note.textContent = a === 0 ? 'Ya tienes todas las unidades de esta talla en tu bolsa.' : a <= 2 ? `¡Solo quedan ${a}!` : `${a} disponibles`;
+    if (a <= 2) note.classList.add('low');
+  }
+  $('#qVal').textContent = state.qty;
+  const ok = state.size && available(p, state.size) > 0;
+  $('#addBtn').disabled = !ok; $('#buyNow').disabled = !ok;
+  $('#addBtn').textContent = ok ? `Agregar · ${CJ.money(p.price * state.qty)}` : 'Elige una talla';
+}
+
+function addToCart() {
+  const p = state.current;
+  const ex = cart.find(c => c.id === p.id && c.size === state.size);
+  if (ex) ex.qty += state.qty; else cart.push({ id: p.id, size: state.size, qty: state.qty });
+  CJ.saveCart(cart); renderCart();
+}
+
+function renderCart() {
+  cart = cart.filter(c => products.some(p => p.id === c.id));
+  const n = cart.reduce((a, c) => a + c.qty, 0);
+  $('#cartCount').textContent = n; $('#cartCount').hidden = !n;
+  let total = 0;
+  $('#items').innerHTML = cart.length ? cart.map((c, i) => {
+    const p = products.find(x => x.id === c.id); total += p.price * c.qty;
+    return `<div class="ci"><img src="${CJ.image(p)}" alt=""><div><h4>${CJ.esc(p.name)}</h4><small>Talla ${CJ.esc(c.size)} · ${c.qty} × ${CJ.money(p.price)}</small><br><button class="rm" data-rm="${i}">Quitar</button></div><strong>${CJ.money(p.price * c.qty)}</strong></div>`;
+  }).join('') : '<div class="empty">Tu bolsa está vacía.<br>¡Mira la colección y elige tu próximo outfit!</div>';
+  $('#total').textContent = CJ.money(total);
+  $('#goCheckout').disabled = !cart.length;
+  if (!cart.length) { $('#checkout').classList.remove('show'); $('#goCheckout').hidden = false; }
+}
+
+function sendOrder(lines, customer) {
+  const total = lines.reduce((a, l) => a + l.price * l.qty, 0);
+  const order = { id: CJ.uid('o'), date: new Date().toISOString(), customer, items: lines, total, status: 'Pendiente' };
+  const orders = CJ.getOrders(); orders.unshift(order); CJ.saveOrders(orders);
+  const txt = [`🛍️ *Nuevo pedido CJ* (#${order.id.slice(-5).toUpperCase()})`, '',
+    ...lines.map(l => `• ${l.name} — Talla ${l.size} × ${l.qty} = ${CJ.money(l.price * l.qty)}`), '',
+    `*Total: ${CJ.money(total)}*`,
+    customer ? `\n👤 ${customer.name}\n📱 ${customer.phone}\n📍 ${customer.address}, ${customer.city}\n💳 ${customer.method}` : ''].join('\n');
+  window.open(`https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(txt)}`, '_blank', 'noopener');
+}
+
+function show(sel) { $('#scrim').classList.add('open'); $(sel).classList.add('open'); }
+function hideAll() { $('#scrim').classList.remove('open'); $('#modal').classList.remove('open'); $('#drawer').classList.remove('open'); }
+
+/* eventos */
+document.addEventListener('click', e => {
+  const t = e.target;
+  const card = t.closest('.card[data-id]'); if (card) return openProduct(card.dataset.id);
+  const chip = t.closest('.chip'); if (chip) { state.cat = chip.dataset.cat; renderChips(); renderGrid(); return; }
+  const jump = t.closest('[data-jump]'); if (jump) { state.cat = jump.dataset.jump; renderChips(); renderGrid(); }
+  const sb = t.closest('.size-btn'); if (sb && !sb.disabled) { state.size = sb.dataset.size; updatePD(); return; }
+  if (t.closest('[data-close]') || t === $('#scrim')) return hideAll();
+  const rm = t.closest('[data-rm]'); if (rm) { cart.splice(+rm.dataset.rm, 1); CJ.saveCart(cart); renderCart(); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideAll(); });
+$('#qMinus').onclick = () => { state.qty = Math.max(1, state.qty - 1); updatePD(); };
+$('#qPlus').onclick = () => { if (state.size) state.qty = Math.min(available(state.current, state.size), state.qty + 1); updatePD(); };
+$('#addBtn').onclick = () => { addToCart(); hideAll(); toast(`✓ ${state.current.name} (${state.size}) agregado a tu bolsa`); };
+$('#buyNow').onclick = () => { const p = state.current; sendOrder([{ id: p.id, name: p.name, size: state.size, qty: state.qty, price: p.price }], null); hideAll(); };
+$('#openCart').onclick = () => { renderCart(); show('#drawer'); };
+$('#goCheckout').onclick = () => { $('#checkout').classList.add('show'); $('#goCheckout').hidden = true; $('#checkout [name=name]').focus(); };
+$('#checkout').onsubmit = e => {
+  e.preventDefault();
+  const customer = Object.fromEntries(new FormData(e.target));
+  const lines = cart.map(c => { const p = products.find(x => x.id === c.id); return { id: p.id, name: p.name, size: c.size, qty: c.qty, price: p.price }; });
+  sendOrder(lines, customer);
+  cart = []; CJ.saveCart(cart); renderCart(); e.target.reset(); hideAll();
+  toast('¡Pedido enviado! Te confirmamos por WhatsApp 🙌');
+};
+const onSearch = e => { state.q = e.target.value; $('#q').value = $('#qm').value = state.q; renderGrid(); };
+$('#q').oninput = onSearch; $('#qm').oninput = onSearch;
+$('#onlyStock').onchange = renderGrid; $('#sort').onchange = renderGrid;
+
+function boot() { load(); renderStatic(); renderChips(); renderGrid(); renderCart(); }
+CJ.onChange(boot);
+boot();
+</script>
+</body>
+</html>
