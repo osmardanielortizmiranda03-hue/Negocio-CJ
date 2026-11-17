@@ -34,6 +34,14 @@ Prototipo 100% estático (HTML + JS sin framework, sin build). Abrir `index.html
   items:[{id, name, size, qty, price}], customer:{name, phone, city, address, refs, method, lat, lng}}`.
 - Ajustes: `{storeName, tagline, whatsapp, adminPin, shippingNote}`.
 
+**Fotos extra, videos y ficha técnica**
+- Producto añade `media:[{type:'image'|'video', id} | {type:'embed', url}]` y
+  `details:{fabric, composition, fit, care, features, sizing}` (`features` y `sizing` = texto, una línea por ítem).
+- Los archivos (fotos extra ya reducidas a 1200px y videos tal cual, máx. 150 MB) van a IndexedDB `cj_media`
+  (`CJ.media.put/get/url/del`). En producción: subir a almacenamiento de archivos y, para video, idealmente
+  transcodificar a MP4 H.264 + póster (p. ej. Cloudinary, Mux o Bunny Stream).
+- Enlaces de YouTube, TikTok e Instagram se convierten a reproductor incrustado con `CJ.embed(url)`.
+
 **Mapa**: Leaflet 1.9.4 (en `vendor/`) con teselas de OpenStreetMap, búsqueda con Nominatim y GPS del navegador.
 El punto se envía como enlace `https://www.google.com/maps?q=lat,lng`. Se puede cambiar por Google Maps JS API
 si se consigue una API key. Nominatim tiene límite de uso (1 petición por segundo); para producción conviene

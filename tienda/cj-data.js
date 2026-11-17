@@ -570,7 +570,59 @@
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"><rect width="300" height="300" fill="${bg}"/><circle cx="150" cy="150" r="118" fill="#fff" opacity=".55"/>${g}<text x="150" y="288" font-family="Arial" font-size="11" fill="#9a8f80" text-anchor="middle" letter-spacing="3">CJ · FOTO PRÓXIMAMENTE</text></svg>`);
   }
 
+  /* Fotos extra y videos: se guardan en IndexedDB (aguanta archivos grandes) */
+  const media = (() => {
+    const memStore = new Map(), urls = new Map();
+    let dbp = null;
+    function open() {
+      if (!dbp) dbp = new Promise(res => {
+        try {
+          const r = indexedDB.open('cj_media', 1);
+          r.onupgradeneeded = () => r.result.createObjectStore('files');
+          r.onsuccess = () => res(r.result); r.onerror = () => res(null); r.onblocked = () => res(null);
+        } catch (e) { res(null); }
+      });
+      return dbp;
+    }
+    async function run(mode, fn) {
+      const db = await open();
+      if (!db) return fn(null);
+      return new Promise((res, rej) => {
+        const t = db.transaction('files', mode), req = fn(t.objectStore('files'));
+        t.oncomplete = () => res(req && 'result' in req ? req.result : undefined);
+        t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+      });
+    }
+    return {
+      async put(blob, id) {
+        id = id || 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+        await run('readwrite', st => st ? st.put(blob, id) : memStore.set(id, blob));
+        return id;
+      },
+      async get(id) { return run('readonly', st => st ? st.get(id) : { result: memStore.get(id) }); },
+      async url(id) {
+        if (urls.has(id)) return urls.get(id);
+        const b = await this.get(id); if (!b) return '';
+        const u = URL.createObjectURL(b); urls.set(id, u); return u;
+      },
+      async del(id) { if (urls.has(id)) { URL.revokeObjectURL(urls.get(id)); urls.delete(id); } await run('readwrite', st => st ? st.delete(id) : memStore.delete(id)); },
+      async clear() { urls.forEach(u => URL.revokeObjectURL(u)); urls.clear(); memStore.clear(); await run('readwrite', st => st && st.clear()); },
+    };
+  })();
+
+  /* Enlaces de YouTube, TikTok o Instagram -> reproductor incrustado */
+  function embed(url) {
+    const u = String(url || '').trim(); let m;
+    if ((m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w-]{11})/)))
+      return { kind: 'YouTube', src: `https://www.youtube.com/embed/${m[1]}?rel=0&playsinline=1`, thumb: `https://img.youtube.com/vi/${m[1]}/hqdefault.jpg` };
+    if ((m = u.match(/tiktok\.com\/.*\/video\/(\d+)/))) return { kind: 'TikTok', src: `https://www.tiktok.com/embed/v2/${m[1]}`, vertical: true };
+    if ((m = u.match(/instagram\.com\/(?:[\w.]+\/)?(p|reel|reels|tv)\/([\w-]+)/))) return { kind: 'Instagram', src: `https://www.instagram.com/${m[1] === 'reels' ? 'reel' : m[1]}/${m[2]}/embed`, vertical: true };
+    if (/^https?:\/\/\S+\.(mp4|webm|mov|m4v)(\?\S*)?$/i.test(u)) return { kind: 'Video', src: u, file: true };
+    return null;
+  }
+
   const CJ = {
+    media, embed,
     getProducts() { return read(K.products, SEED_PRODUCTS); },
     saveProducts(list) { return write(K.products, list); },
     getOrders() { return read(K.orders, []); },
@@ -579,7 +631,7 @@
     saveSettings(s) { return write(K.settings, s); },
     getCart() { return read(K.cart, []); },
     saveCart(c) { return write(K.cart, c); },
-    resetAll() { [K.products, K.orders, K.settings, K.cart].forEach(k => { delete mem[k]; try { localStorage.removeItem(k); } catch (e) {} }); },
+    resetAll() { [K.products, K.orders, K.settings, K.cart].forEach(k => { delete mem[k]; try { localStorage.removeItem(k); } catch (e) {} }); return media.clear(); },
     totalStock(p) { return (p.sizes || []).reduce((a, s) => a + (Number(s.stock) || 0), 0); },
     image(p) { return p.image || placeholder(p); },
     money(n) { return '$' + Math.round(Number(n) || 0).toLocaleString('es-CO'); },

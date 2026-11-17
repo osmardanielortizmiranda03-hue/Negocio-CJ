@@ -120,6 +120,21 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 .photo{grid-column:1/-1;display:flex;gap:14px;align-items:center}
 .photo img{width:110px;height:132px;object-fit:cover;border-radius:12px;background:var(--surface-2)}
 .photo label.btn{cursor:pointer}
+.sec{grid-column:1/-1;border-top:1px solid var(--line);padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sec>h3{grid-column:1/-1;margin:0;font-size:16px;display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.sec>h3 small{font-weight:500;color:var(--muted);font-size:13px}
+@media (max-width:560px){.sec{grid-template-columns:1fr}}
+.mgrid{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.mt{position:relative;aspect-ratio:4/5;border-radius:10px;overflow:hidden;background:#111;border:1px solid var(--line)}
+.mt img,.mt video{width:100%;height:100%;object-fit:cover;display:block}
+.mt .lbl{position:absolute;left:6px;bottom:6px;background:rgba(0,0,0,.65);color:#fff;font-size:11px;font-weight:700;border-radius:6px;padding:2px 6px}
+.mt .x{position:absolute;top:5px;right:5px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;font-size:15px;line-height:1}
+.mt.link{display:grid;place-items:center;color:#fff;font-size:12px;text-align:center;padding:8px;background:linear-gradient(135deg,#222,#3a3226)}
+.madd{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.madd label.btn{cursor:pointer}
+.linkrow{grid-column:1/-1;display:flex;gap:8px}
+.linkrow input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 12px}
+.mnote{grid-column:1/-1;font-size:13px;color:var(--muted);min-height:18px}
 .sizes-ed{grid-column:1/-1;display:flex;flex-direction:column;gap:8px}
 .sz{display:grid;grid-template-columns:1fr 1fr 40px;gap:8px}
 .sz input{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 10px}
@@ -224,7 +239,7 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
       </form>
       <div class="panel settings">
         <h2>Respaldo de datos</h2>
-        <p style="margin:0;color:var(--muted);font-size:14px">En este prototipo los datos viven en este navegador. Descarga un respaldo seguido y súbelo en otro equipo si lo necesitas.</p>
+        <p style="margin:0;color:var(--muted);font-size:14px">En este prototipo los datos viven en este navegador. Descarga un respaldo seguido y súbelo en otro equipo si lo necesitas. El respaldo incluye fotos y videos subidos (puede pesar bastante).</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn ghost" id="exportBtn">⬇ Descargar respaldo</button>
           <label class="btn ghost" style="cursor:pointer">⬆ Cargar respaldo<input type="file" id="importFile" accept="application/json" hidden></label>
@@ -250,7 +265,30 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
     <label class="f">Precio de venta (COP)<input name="price" type="number" min="0" step="1000" required></label>
     <label class="f">Precio de costo (COP)<input name="cost" type="number" min="0" step="100"></label>
     <div class="f"><span>&nbsp;</span><div class="margin-note" id="marginNote" style="margin:0"></div></div>
-    <label class="f full">Descripción (opcional)<textarea name="description" placeholder="Tela, ajuste, cómo combinarla…"></textarea></label>
+    <label class="f full">Descripción (opcional)<textarea name="description" placeholder="Cómo se siente, cómo combinarla, para qué ocasión…"></textarea></label>
+    <div class="sec">
+      <h3>🎬 Más fotos y videos <small>se ven al abrir la prenda en la tienda</small></h3>
+      <div class="mgrid" id="mGrid"></div>
+      <div class="madd">
+        <label class="btn sm ghost">📷 Agregar fotos<input type="file" accept="image/*" multiple id="mPhotos" hidden></label>
+        <label class="btn sm ghost">🎬 Subir video<input type="file" accept="video/*" id="mVideo" hidden></label>
+      </div>
+      <div class="linkrow">
+        <input id="mLink" placeholder="O pega un enlace de YouTube, TikTok o Instagram" aria-label="Enlace de video">
+        <button type="button" class="btn sm ghost" id="mLinkAdd">Agregar enlace</button>
+      </div>
+      <div class="mnote" id="mNote"></div>
+    </div>
+    <div class="sec">
+      <h3>🧵 Ficha técnica <small>lo que no escribas no se muestra</small></h3>
+      <label class="f">Tela<input name="fabric" list="fabricList" placeholder="Ej: Lino, Algodón, Piqué"><datalist id="fabricList">
+        <option value="Algodón"><option value="Algodón peinado"><option value="Lino"><option value="Lino-algodón"><option value="Piqué"><option value="Drill"><option value="Denim"><option value="Poliéster"><option value="Licra / Spandex"><option value="French terry"><option value="Seda fría"></datalist></label>
+      <label class="f">Composición<input name="composition" placeholder="Ej: 95% algodón, 5% elastano"></label>
+      <label class="f">Ajuste / horma<select name="fit"><option value="">—</option><option>Regular fit</option><option>Slim fit</option><option>Oversize</option><option>Relaxed fit</option><option>Ajustado</option></select></label>
+      <label class="f">Cuidados<input name="care" placeholder="Ej: Lavar a mano, agua fría, no usar secadora"></label>
+      <label class="f full">Características (una por línea)<textarea name="features" placeholder="Tela fresca, ideal para clima cálido&#10;No transparenta&#10;Pantalón con resorte y cordón"></textarea></label>
+      <label class="f full">Medidas / guía de tallas (opcional)<textarea name="sizing" placeholder="S: pecho 50 cm, largo 70 cm&#10;M: pecho 53 cm, largo 72 cm"></textarea></label>
+    </div>
     <div class="sizes-ed">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
         <strong>Tallas y unidades</strong>
@@ -281,7 +319,8 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
 <script>
 const $ = s => document.querySelector(s);
 let products = CJ.getProducts(), orders = CJ.getOrders(), settings = CJ.getSettings();
-let editing = null, formImage = '';
+let editing = null, formImage = '', formMedia = [], newMediaIds = [];
+const DETAIL_KEYS = ['fabric', 'composition', 'fit', 'care', 'features', 'sizing'];
 const LOW = 2;
 
 function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200); }
@@ -348,6 +387,10 @@ function renderCatsSelect() {
   $('#pcat').value = cats.includes(cur) ? cur : '';
   $('#catList').innerHTML = cats.map(c => `<option value="${CJ.esc(c)}">`).join('');
 }
+function mediaBadge(p) {
+  const m = p.media || [], v = m.filter(x => x.type !== 'image').length, f = m.length - v;
+  return (f ? `<span class="chipx">📷 +${f}</span>` : '') + (v ? `<span class="chipx star">▶ ${v} video${v > 1 ? 's' : ''}</span>` : '');
+}
 function renderPrendas() {
   const q = $('#pq').value.toLowerCase(), c = $('#pcat').value, st = $('#pstate').value;
   const list = products.filter(p => (!q || p.name.toLowerCase().includes(q)) && (!c || p.category === c) &&
@@ -358,7 +401,7 @@ function renderPrendas() {
       <img src="${CJ.image(p)}" alt="">
       <div style="min-width:0">
         <h3>${CJ.esc(p.name)} ${p.featured ? '<span class="chipx star">⭐ Destacada</span>' : ''} ${p.active === false ? '<span class="chipx">Oculta</span>' : ''}</h3>
-        <div class="meta"><span>${CJ.esc(p.category)}</span><span>Venta <b>${CJ.money(p.price)}</b></span><span>Costo ${CJ.money(p.cost)}</span><span class="chipx ${total ? '' : 'out'}">${total} und.</span></div>
+        <div class="meta"><span>${CJ.esc(p.category)}</span><span>Venta <b>${CJ.money(p.price)}</b></span><span>Costo ${CJ.money(p.cost)}</span><span class="chipx ${total ? '' : 'out'}">${total} und.</span>${mediaBadge(p)}${p.details && Object.keys(p.details).length ? '<span class="chipx">🧵 Ficha</span>' : '<span class="chipx" style="opacity:.6">Sin ficha técnica</span>'}</div>
         <div class="stocks">${p.sizes.map((s, i) => `<span class="st ${s.stock === 0 ? 'zero' : s.stock <= LOW ? 'low' : ''}"><b>${CJ.esc(s.size)}</b><button data-dec="${p.id}|${i}" aria-label="Restar ${CJ.esc(s.size)}">−</button><span>${s.stock}</span><button data-inc="${p.id}|${i}" aria-label="Sumar ${CJ.esc(s.size)}">+</button></span>`).join('') || '<span style="color:var(--muted);font-size:13px">Sin tallas</span>'}</div>
       </div>
       <div class="acts">
@@ -396,8 +439,11 @@ function openForm(p) {
   $('#delBtn').hidden = !p;
   $('#sizeRows').innerHTML = '';
   formImage = p ? p.image || '' : '';
+  formMedia = p ? (p.media || []).map(m => ({ ...m })) : []; newMediaIds = [];
+  $('#mNote').textContent = ''; $('#mLink').value = ''; renderMedia();
   if (p) {
     ['name', 'category', 'price', 'cost', 'description'].forEach(k => f[k].value = p[k] ?? '');
+    DETAIL_KEYS.forEach(k => f[k].value = (p.details || {})[k] || '');
     f.featured.checked = !!p.featured; f.active.checked = p.active !== false;
     p.sizes.forEach(s => sizeRow(s.size, s.stock));
   } else { ['S', 'M', 'L', 'XL'].forEach(s => sizeRow(s, 0)); }
@@ -430,16 +476,76 @@ $('#fFile').onchange = e => {
   img.src = url; e.target.value = '';
 };
 $('#fNoImg').onclick = () => { formImage = ''; updatePreview(); };
-$('#cancelBtn').onclick = () => $('#dlg').close();
+/* fotos extra y videos */
+async function renderMedia() {
+  const grid = $('#mGrid');
+  if (!formMedia.length) { grid.innerHTML = '<div style="color:var(--muted);font-size:13px;grid-column:1/-1">Aún no hay fotos extra ni videos.</div>'; return; }
+  const html = await Promise.all(formMedia.map(async (m, i) => {
+    const x = `<button type="button" class="x" data-mrm="${i}" aria-label="Quitar">×</button>`;
+    if (m.type === 'image') return `<div class="mt"><img src="${await CJ.media.url(m.id)}" alt="">${x}</div>`;
+    if (m.type === 'video') return `<div class="mt"><video src="${await CJ.media.url(m.id)}#t=0.5" muted preload="metadata"></video><span class="lbl">▶ Video</span>${x}</div>`;
+    const e = CJ.embed(m.url) || { kind: 'Enlace' };
+    return `<div class="mt link">${e.thumb ? `<img src="${e.thumb}" alt="" style="position:absolute;inset:0" onerror="this.remove()">` : `▶<br>${CJ.esc(e.kind)}`}<span class="lbl">▶ ${CJ.esc(e.kind)}</span>${x}</div>`;
+  }));
+  grid.innerHTML = html.join('');
+}
+function shrinkImage(file, max = 1200) {
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      c.toBlob(b => b ? res(b) : rej(), 'image/jpeg', .82);
+    };
+    img.onerror = rej; img.src = url;
+  });
+}
+async function addMediaFile(blob, type) {
+  const id = await CJ.media.put(blob); newMediaIds.push(id); formMedia.push({ type, id }); await renderMedia();
+}
+$('#mPhotos').onchange = async e => {
+  const files = [...e.target.files]; e.target.value = '';
+  $('#mNote').textContent = `Procesando ${files.length} foto(s)…`;
+  for (const f of files) { try { await addMediaFile(await shrinkImage(f), 'image'); } catch (err) { toast('No se pudo leer una foto'); } }
+  $('#mNote').textContent = '';
+};
+$('#mVideo').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  const mb = f.size / 1048576;
+  if (mb > 150) return toast('El video pesa más de 150 MB. Recórtalo o súbelo a YouTube/TikTok y pega el enlace.');
+  $('#mNote').textContent = `Guardando video (${mb.toFixed(1)} MB)…`;
+  try { await addMediaFile(f, 'video'); $('#mNote').textContent = mb > 40 ? 'Consejo: videos de menos de 40 MB cargan más rápido para tus clientes.' : ''; }
+  catch (err) { $('#mNote').textContent = ''; toast('No hay espacio para ese video en este navegador'); }
+};
+$('#mLinkAdd').onclick = () => {
+  const url = $('#mLink').value.trim(); if (!url) return;
+  if (!CJ.embed(url)) { $('#mNote').textContent = 'Ese enlace no es de YouTube, TikTok o Instagram. Revisa que sea el enlace del video.'; return; }
+  formMedia.push({ type: 'embed', url }); $('#mLink').value = ''; $('#mNote').textContent = ''; renderMedia();
+};
+$('#mLink').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $('#mLinkAdd').click(); } });
+$('#mGrid').addEventListener('click', e => {
+  const b = e.target.closest('[data-mrm]'); if (!b) return;
+  formMedia.splice(+b.dataset.mrm, 1); renderMedia();
+});
+/* al cerrar sin guardar, borra los archivos recién subidos */
+function discardNewMedia() { newMediaIds.forEach(id => CJ.media.del(id)); newMediaIds = []; }
+$('#dlg').addEventListener('cancel', discardNewMedia);
+$('#cancelBtn').onclick = () => { discardNewMedia(); $('#dlg').close(); };
 $('#delBtn').onclick = () => {
   if (!editing || !confirm(`¿Eliminar "${editing.name}" definitivamente?`)) return;
+  (editing.media || []).concat(formMedia).forEach(m => m.id && CJ.media.del(m.id)); newMediaIds = [];
   products = products.filter(p => p !== editing); save(); $('#dlg').close(); toast('Prenda eliminada');
 };
 $('#pform').onsubmit = e => {
   e.preventDefault(); const f = e.target;
   const sizes = [...$('#sizeRows').children].map(r => { const [a, b] = r.querySelectorAll('input'); return { size: a.value.trim().toUpperCase(), stock: Math.max(0, parseInt(b.value) || 0) }; }).filter(s => s.size);
   const data = { name: f.name.value.trim(), category: f.category.value.trim(), price: +f.price.value || 0, cost: +f.cost.value || 0,
-    description: f.description.value.trim(), featured: f.featured.checked, active: f.active.checked, image: formImage, sizes };
+    description: f.description.value.trim(), featured: f.featured.checked, active: f.active.checked, image: formImage, sizes,
+    media: formMedia, details: Object.fromEntries(DETAIL_KEYS.map(k => [k, f[k].value.trim()]).filter(([, v]) => v)) };
+  const keep = new Set(formMedia.map(m => m.id).filter(Boolean));
+  if (editing) (editing.media || []).forEach(m => m.id && !keep.has(m.id) && CJ.media.del(m.id));
+  newMediaIds = [];
   if (editing) Object.assign(editing, data); else products.unshift({ id: CJ.uid('p'), ...data });
   save(); $('#dlg').close(); toast(editing ? '✓ Cambios guardados' : '✓ Prenda agregada a la tienda');
 };
@@ -501,22 +607,27 @@ $('#settingsForm').onsubmit = e => {
   settings.whatsapp = settings.whatsapp.replace(/\D/g, ''); if (!settings.adminPin) settings.adminPin = '1234';
   CJ.saveSettings(settings); renderAjustes(); toast('✓ Ajustes guardados');
 };
-$('#exportBtn').onclick = () => {
-  const blob = new Blob([JSON.stringify({ products, orders, settings }, null, 1)], { type: 'application/json' });
+const toDataURL = b => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(b); });
+$('#exportBtn').onclick = async () => {
+  toast('Preparando respaldo…');
+  const files = {};
+  for (const p of products) for (const m of p.media || []) if (m.id) { const b = await CJ.media.get(m.id); if (b) files[m.id] = await toDataURL(b); }
+  const blob = new Blob([JSON.stringify({ products, orders, settings, files }, null, 1)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `cj-respaldo-${new Date().toISOString().slice(0, 10)}.json`; a.click();
 };
 $('#importFile').onchange = async e => {
   try {
     const d = JSON.parse(await e.target.files[0].text());
     if (!Array.isArray(d.products)) throw 0;
+    for (const [id, url] of Object.entries(d.files || {})) await CJ.media.put(await (await fetch(url)).blob(), id);
     products = d.products; orders = d.orders || []; settings = Object.assign(CJ.getSettings(), d.settings || {});
     CJ.saveOrders(orders); CJ.saveSettings(settings); save(); renderAjustes(); toast('✓ Respaldo cargado');
   } catch (err) { toast('Archivo no válido'); }
   e.target.value = '';
 };
-$('#resetBtn').onclick = () => {
+$('#resetBtn').onclick = async () => {
   if (!confirm('Esto borra tus cambios y pedidos y vuelve al inventario del Excel. ¿Continuar?')) return;
-  CJ.resetAll(); products = CJ.getProducts(); orders = []; settings = CJ.getSettings(); renderAjustes(); renderAll(); toast('Inventario restaurado');
+  await CJ.resetAll(); products = CJ.getProducts(); orders = []; settings = CJ.getSettings(); renderAjustes(); renderAll(); toast('Inventario restaurado');
 };
 
 function renderAll() { renderCatsSelect(); renderResumen(); renderPrendas(); renderPedidos(); renderAjustes(); }

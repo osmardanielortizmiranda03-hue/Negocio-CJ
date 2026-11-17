@@ -113,7 +113,39 @@ section.catalog{padding:40px 0 64px}
 .modal{position:fixed;z-index:50;left:50%;top:50%;transform:translate(-50%,-46%);opacity:0;pointer-events:none;transition:.25s;width:min(900px,calc(100% - 32px));max-height:calc(100% - 32px);overflow:auto;background:var(--surface);border-radius:22px;box-shadow:var(--shadow)}
 .modal.open{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}
 .pd{display:grid;grid-template-columns:1fr 1fr}
-.pd img{width:100%;height:100%;object-fit:cover;aspect-ratio:4/5;background:var(--surface-2)}
+.gal{display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--surface-2);align-self:start;position:sticky;top:0}
+.stage{position:relative;aspect-ratio:4/5;border-radius:14px;overflow:hidden;background:#0d0d0d}
+.stage img{width:100%;height:100%;object-fit:cover;display:block}
+.stage video,.stage iframe{width:100%;height:100%;border:0;display:block;background:#000;object-fit:contain}
+.stage .nav{position:absolute;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.85);color:#111;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.stage .nav.prev{left:8px}.stage .nav.next{right:8px}
+.stage .count{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px}
+.stage .ext{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#fff;padding:20px;gap:10px;align-content:center}
+.stage .ext a{color:#111;background:#fff;border-radius:999px;padding:10px 18px;font-weight:700;text-decoration:none}
+.thumbs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.thumbs::-webkit-scrollbar{display:none}
+.th{flex:none;width:58px;height:70px;border-radius:9px;overflow:hidden;border:2px solid transparent;padding:0;background:#222;position:relative}
+.th[aria-current="true"]{border-color:var(--accent)}
+.th img,.th video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.th .play{position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:18px;background:rgba(0,0,0,.35);text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.vbtn{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;border:0;border-radius:999px;background:var(--ink);color:var(--bg);padding:7px 14px;font-weight:700;font-size:13px}
+.vbtn[hidden]{display:none}
+.chips-spec{display:flex;flex-wrap:wrap;gap:6px}
+.chips-spec span{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--bg)}
+.chips-spec b{font-weight:700}
+.acc{border-top:1px solid var(--line)}
+.acc details{border-bottom:1px solid var(--line)}
+.acc summary{cursor:pointer;list-style:none;padding:14px 0;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"+";font-size:22px;font-weight:400;color:var(--muted)}
+.acc details[open] summary::after{content:"−"}
+.acc .in{padding:0 0 14px;font-size:14px;color:var(--muted)}
+.spec{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0}
+.spec dt{font-weight:700;color:var(--ink)}
+.spec dd{margin:0}
+.acc ul{margin:10px 0 0;padding-left:18px}
+.acc pre{font:inherit;white-space:pre-wrap;margin:0}
+.ph .vtag{position:absolute;right:10px;bottom:10px;background:rgba(0,0,0,.7);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:4px 9px}
 .pd .body{padding:28px;display:flex;flex-direction:column;gap:14px}
 .pd h2{margin:0;font-size:36px;line-height:1}
 .pd .price{font-size:26px;font-weight:700}
@@ -132,7 +164,7 @@ section.catalog{padding:40px 0 64px}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 .btn.wa{background:#25d366;color:#0b2914}
 .close{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:0;background:var(--surface);box-shadow:var(--shadow);font-size:22px;z-index:2}
-@media (max-width:700px){.pd{grid-template-columns:1fr}.pd img{aspect-ratio:1}.pd .body{padding:20px}.pd h2{font-size:28px}}
+@media (max-width:700px){.pd{grid-template-columns:1fr}.gal{position:static}.stage{aspect-ratio:1}.pd .body{padding:20px}.pd h2{font-size:28px}}
 
 .drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--surface);z-index:50;transform:translateX(100%);transition:transform .25s;display:flex;flex-direction:column}
 .drawer.open{transform:none}
@@ -250,12 +282,17 @@ footer.site a{color:var(--accent)}
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="pdName">
   <button class="close" data-close aria-label="Cerrar">×</button>
   <div class="pd">
-    <img id="pdImg" alt="">
+    <div class="gal">
+      <div class="stage" id="pdStage"></div>
+      <div class="thumbs" id="pdThumbs" role="tablist" aria-label="Fotos y videos"></div>
+    </div>
     <div class="body">
       <div class="card" style="border:0;padding:0;background:none"><span class="cat" id="pdCat"></span></div>
       <h2 class="display" id="pdName"></h2>
       <div class="price" id="pdPrice"></div>
+      <button class="vbtn" id="pdVideoBtn" hidden>▶ Ver video de la prenda</button>
       <p class="desc" id="pdDesc"></p>
+      <div class="chips-spec" id="pdChips"></div>
       <div><strong>Elige tu talla</strong></div>
       <div class="size-grid" id="pdSizes"></div>
       <div class="stock-note" id="pdStock"></div>
@@ -264,6 +301,7 @@ footer.site a{color:var(--accent)}
         <button class="btn" id="addBtn" disabled>Elige una talla</button>
       </div>
       <button class="btn wa" id="buyNow" disabled>Pedir ya por WhatsApp</button>
+      <div class="acc" id="pdAcc"></div>
     </div>
   </div>
 </div>
@@ -350,7 +388,7 @@ function renderGrid() {
     const total = CJ.totalStock(p);
     const tag = total === 0 ? '<span class="tag out">Agotado</span>' : total <= 2 ? '<span class="tag hot">¡Últimas!</span>' : p.featured ? '<span class="tag">Top ventas</span>' : '';
     return `<button class="card ${total === 0 ? 'soldout' : ''}" data-id="${p.id}">
-      <div class="ph"><img loading="lazy" src="${CJ.image(p)}" alt="${CJ.esc(p.name)}">${tag}</div>
+      <div class="ph"><img loading="lazy" src="${CJ.image(p)}" alt="${CJ.esc(p.name)}">${tag}${(p.media || []).some(m => m.type !== 'image') ? '<span class="vtag">▶ Video</span>' : ''}</div>
       <div class="info"><span class="cat">${CJ.esc(p.category)}</span><h3>${CJ.esc(p.name)}</h3>
       <div class="sizes">${p.sizes.map(s => `<span class="${s.stock > 0 ? '' : 'no'}">${CJ.esc(s.size)}</span>`).join('')}</div>
       <div class="price">${CJ.money(p.price)}</div></div></button>`;
@@ -363,13 +401,70 @@ function available(p, size) { const s = p.sizes.find(x => x.size === size); retu
 function openProduct(id) {
   const p = products.find(x => x.id === id); if (!p) return;
   state.current = p; state.size = null; state.qty = 1;
-  $('#pdImg').src = CJ.image(p); $('#pdImg').alt = p.name;
+  renderGallery(p);
   $('#pdCat').textContent = p.category; $('#pdName').textContent = p.name;
   $('#pdPrice').textContent = CJ.money(p.price);
-  $('#pdDesc').textContent = p.description || 'Prenda seleccionada por CJ. Tela cómoda, corte moderno y lista para combinar.';
+  $('#pdDesc').textContent = p.description || 'Prenda seleccionada por CJ. Corte moderno y lista para combinar.';
+  renderDetails(p);
   $('#pdSizes').innerHTML = p.sizes.map(s => `<button class="size-btn" data-size="${CJ.esc(s.size)}" ${s.stock > 0 ? '' : 'disabled'} aria-pressed="false">${CJ.esc(s.size)}</button>`).join('');
   updatePD(); show('#modal');
 }
+/* galería: foto principal + fotos extra + videos */
+const gal = { items: [], i: 0 };
+async function renderGallery(p) {
+  const token = gal.token = {};
+  gal.items = [{ type: 'image', src: CJ.image(p) }]; gal.i = 0; showSlide(0);
+  const extra = await Promise.all((p.media || []).map(async m => {
+    if (m.type === 'embed') { const e = CJ.embed(m.url); return e && { type: e.file ? 'video' : 'embed', src: e.src, kind: e.kind, thumb: e.thumb, url: m.url }; }
+    const src = await CJ.media.url(m.id); return src && { type: m.type, src };
+  }));
+  if (gal.token !== token) return;
+  gal.items = gal.items.concat(extra.filter(Boolean));
+  const vi = gal.items.findIndex(x => x.type !== 'image');
+  $('#pdVideoBtn').hidden = vi < 0; $('#pdVideoBtn').onclick = () => showSlide(vi);
+  renderThumbs(); showSlide(0);
+}
+function renderThumbs() {
+  $('#pdThumbs').hidden = gal.items.length < 2;
+  $('#pdThumbs').innerHTML = gal.items.map((it, i) => {
+    const inner = it.type === 'image' ? `<img src="${it.src}" alt="">`
+      : it.type === 'video' ? `<video src="${it.src}#t=0.5" muted preload="metadata"></video><span class="play">▶</span>`
+      : `${it.thumb ? `<img src="${it.thumb}" alt="" onerror="this.remove()">` : ''}<span class="play">▶</span>`;
+    return `<button class="th" data-slide="${i}" aria-label="${it.type === 'image' ? 'Foto' : 'Video'} ${i + 1}">${inner}</button>`;
+  }).join('');
+}
+function showSlide(i) {
+  const n = gal.items.length; gal.i = (i + n) % n;
+  const it = gal.items[gal.i], name = CJ.esc(state.current?.name || '');
+  let html = it.type === 'image' ? `<img src="${it.src}" alt="${name}">`
+    : it.type === 'video' ? `<video src="${it.src}" controls playsinline autoplay muted loop></video>`
+    : `<iframe src="${it.src}" title="Video de ${name}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>`;
+  if (n > 1) html += `<button class="nav prev" data-step="-1" aria-label="Anterior">‹</button><button class="nav next" data-step="1" aria-label="Siguiente">›</button><span class="count">${gal.i + 1} / ${n}</span>`;
+  $('#pdStage').innerHTML = html;
+  document.querySelectorAll('.th').forEach(t => t.setAttribute('aria-current', +t.dataset.slide === gal.i));
+}
+$('#pdThumbs').addEventListener('click', e => { const t = e.target.closest('[data-slide]'); if (t) showSlide(+t.dataset.slide); });
+$('#pdStage').addEventListener('click', e => { const t = e.target.closest('[data-step]'); if (t) showSlide(gal.i + +t.dataset.step); });
+(() => { let x0 = null; const st = $('#pdStage');
+  st.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; }, { passive: true });
+  st.addEventListener('touchend', e => { if (x0 == null || gal.items[gal.i].type !== 'image') return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) showSlide(gal.i + (dx < 0 ? 1 : -1)); x0 = null; });
+})();
+
+/* ficha técnica */
+function renderDetails(p) {
+  const d = p.details || {}, E = CJ.esc;
+  $('#pdChips').innerHTML = [d.fabric && `🧵 <b>${E(d.fabric)}</b>`, d.fit && `📐 ${E(d.fit)}`].filter(Boolean).map(x => `<span>${x}</span>`).join('');
+  const rows = [['Tela', d.fabric], ['Composición', d.composition], ['Ajuste', d.fit], ['Cuidados', d.care]].filter(r => r[1]);
+  const feats = (d.features || '').split('\n').map(x => x.trim()).filter(Boolean);
+  const sec = [];
+  if (rows.length || feats.length) sec.push(`<details open><summary>Detalles de la prenda</summary><div class="in">
+    ${rows.length ? `<dl class="spec">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${E(v)}</dd>`).join('')}</dl>` : ''}
+    ${feats.length ? `<ul>${feats.map(f => `<li>${E(f)}</li>`).join('')}</ul>` : ''}</div></details>`);
+  if (d.sizing) sec.push(`<details><summary>Medidas y guía de tallas</summary><div class="in"><pre>${E(d.sizing)}</pre></div></details>`);
+  sec.push(`<details><summary>Envíos y pagos</summary><div class="in">${E(settings.shippingNote)}. Al hacer tu pedido marcas tu casa en el mapa y te confirmamos por WhatsApp.</div></details>`);
+  $('#pdAcc').innerHTML = sec.join('');
+}
+
 function updatePD() {
   const p = state.current;
   document.querySelectorAll('.size-btn').forEach(b => b.setAttribute('aria-pressed', b.dataset.size === state.size));
@@ -421,7 +516,7 @@ function sendOrder(lines, customer) {
 }
 
 function show(sel) { $('#scrim').classList.add('open'); $(sel).classList.add('open'); }
-function hideAll() { $('#scrim').classList.remove('open'); $('#modal').classList.remove('open'); $('#drawer').classList.remove('open'); }
+function hideAll() { $('#scrim').classList.remove('open'); $('#modal').classList.remove('open'); $('#drawer').classList.remove('open'); $('#pdStage').innerHTML = ''; }
 
 /* eventos */
 document.addEventListener('click', e => {
