@@ -1,0 +1,75 @@
+==============================================
+  TIENDA VIRTUAL CJ - NOTA PARA EL PROGRAMADOR
+==============================================
+
+¡Hola! Gracias por revisar mi proyecto.
+
+Este .zip trae un PROTOTIPO de cómo me imagino mi tienda virtual CJ.
+Es una guía para que veas la idea, no un diseño cerrado.
+
+----------------------------------------------
+  ESTOY ABIERTO A TUS RECOMENDACIONES
+----------------------------------------------
+Estoy sujeto a cualquier recomendación que me brindes o cambio de
+diseño que consideres mejor: colores, organización, tecnología,
+funciones que sobren o falten, o una mejor forma de hacer algo.
+Tú tienes la experiencia, así que si ves algo que se puede hacer
+mejor, más fácil o más económico, dímelo con toda confianza.
+
+----------------------------------------------
+  CÓMO VER EL PROTOTIPO
+----------------------------------------------
+1. Descomprime el .zip.
+2. Abre  tienda/index.html  en el navegador (la tienda para clientes).
+3. Abre  tienda/admin.html  para el panel administrativo.
+   PIN de prueba: 1234
+4. En la carpeta  tienda/capturas/  hay pantallazos de todo.
+5. Notas técnicas (modelo de datos, qué es de prueba, etc.):
+   tienda/LEEME.md
+
+Importante: el prototipo guarda todo en el navegador (no tiene base de
+datos), así que lo que cambies solo lo ves tú en ese equipo.
+
+----------------------------------------------
+  LO QUE NECESITO
+----------------------------------------------
+La mayoría de mis clientes compra DESDE EL CELULAR y llega por
+Facebook Marketplace, WhatsApp e Instagram. Por eso lo más importante
+es que funcione muy bien en celular.
+
+Tienda (clientes):
+ - Catálogo con categorías, buscador y tallas disponibles.
+ - Ficha de cada prenda con varias fotos, VIDEO y ficha técnica
+   (tela, composición, ajuste, cuidados, medidas).
+ - Bolsa de compras y pedido que me llegue por WhatsApp.
+ - Que el cliente marque su casa EN EL MAPA y me llegue la ubicación
+   exacta (enlace de Google Maps).
+ - Enlace directo a cada prenda para publicarlo en Marketplace, que
+   muestre la foto y el precio al pegarlo.
+
+Panel administrativo (yo):
+ - Subir prendas con fotos y videos, precios y costos.
+ - Actualizar el stock por talla de forma rápida desde el celular.
+ - Ver los pedidos con la ubicación del cliente y confirmarlos
+   (que descuenten stock).
+ - Resumen de inventario y alertas de tallas agotadas.
+ - Botón para publicar prendas en Marketplace / WhatsApp.
+ - Acceso seguro (usuario y contraseña de verdad).
+
+Más adelante (si se puede, o dime qué recomiendas):
+ - Pagos en línea: Nequi, Daviplata, PSE, tarjeta.
+ - Cupones y promociones.
+ - Registro de ventas, gastos y compras a proveedores
+   (hoy lo llevo en Excel).
+ - "Avísame cuando llegue" para tallas agotadas.
+
+----------------------------------------------
+  LO QUE ME GUSTARÍA SABER DE TI
+----------------------------------------------
+ - Precio y tiempo de entrega.
+ - Qué tecnología y hosting recomiendas, y cuánto me costaría al mes
+   mantener la página (hosting, dominio, almacenamiento de videos, etc.).
+ - Si se puede hacer por etapas (primero lo básico y luego lo demás).
+ - Qué cambiarías del diseño o de las funciones.
+
+¡Quedo atento! Muchas gracias.
