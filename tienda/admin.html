@@ -312,6 +312,20 @@ dialog::backdrop{background:rgba(0,0,0,.55)}
   </form>
 </dialog>
 
+<dialog id="pubDlg">
+  <div class="form" style="grid-template-columns:1fr">
+    <h2 class="display">📣 Publicar prenda</h2>
+    <p style="margin:0;color:var(--muted);font-size:14px">Texto listo para Facebook Marketplace, estados de WhatsApp, Instagram o grupos. Al tocar <b>Compartir</b> se abre el menú de tu celular con la foto y el texto.</p>
+    <img id="pubImg" alt="" style="width:120px;height:150px;object-fit:cover;border-radius:12px;background:var(--surface-2)">
+    <label class="f">Texto de la publicación<textarea id="pubText" style="min-height:220px;font-size:15px"></textarea></label>
+    <div class="foot" style="justify-content:stretch">
+      <button type="button" class="btn ghost" id="pubClose">Cerrar</button>
+      <button type="button" class="btn ghost" id="pubCopy" style="flex:1;justify-content:center">📋 Copiar texto</button>
+      <button type="button" class="btn accent" id="pubShare" style="flex:1;justify-content:center">↗ Compartir</button>
+    </div>
+  </div>
+</dialog>
+
 <div class="toast" id="toast" role="status"></div>
 
 <script src="vendor/leaflet.js"></script>
@@ -406,6 +420,7 @@ function renderPrendas() {
       </div>
       <div class="acts">
         <button class="btn sm ghost" data-edit="${p.id}">✏️ Editar</button>
+        <button class="btn sm accent" data-pub="${p.id}">📣 Publicar</button>
         <button class="btn sm ghost" data-toggle="${p.id}">${p.active === false ? '👁 Mostrar' : '🙈 Ocultar'}</button>
       </div></div>`;
   }).join('') : '<div class="empty">No hay prendas con ese filtro.</div>';
@@ -420,6 +435,7 @@ document.addEventListener('click', e => {
     s.stock = Math.max(0, s.stock + (t.dataset.inc ? 1 : -1)); save();
   }
   if (t.dataset.edit) openForm(products.find(p => p.id === t.dataset.edit));
+  if (t.dataset.pub) openPublish(products.find(p => p.id === t.dataset.pub));
   if (t.dataset.toggle) { const p = products.find(p => p.id === t.dataset.toggle); p.active = p.active === false; save(); toast(p.active ? 'Visible en la tienda' : 'Oculta de la tienda'); }
   if (t.hasAttribute('data-new')) openForm(null);
   if (t.dataset.order) orderAction(t.dataset.order, t.dataset.act);
@@ -548,6 +564,44 @@ $('#pform').onsubmit = e => {
   newMediaIds = [];
   if (editing) Object.assign(editing, data); else products.unshift({ id: CJ.uid('p'), ...data });
   save(); $('#dlg').close(); toast(editing ? '✓ Cambios guardados' : '✓ Prenda agregada a la tienda');
+};
+
+/* publicar en Marketplace / WhatsApp / Instagram */
+let pubProduct = null;
+function storeLink(p) { return new URL('index.html', location.href).href.split('#')[0] + '#p=' + encodeURIComponent(p.id); }
+function publishText(p) {
+  const sizes = p.sizes.filter(s => s.stock > 0).map(s => s.size), d = p.details || {};
+  const feats = (d.features || '').split('\n').map(x => x.trim()).filter(Boolean).slice(0, 3);
+  return [
+    `🔥 ${p.name.toUpperCase()} — ${CJ.money(p.price)}`,
+    sizes.length ? `📏 Tallas disponibles: ${sizes.join(', ')}` : '⏳ Agotado por ahora — pregunta por la próxima llegada',
+    d.fabric ? `🧵 Tela: ${d.fabric}${d.composition ? ` (${d.composition})` : ''}` : '',
+    d.fit ? `📐 Ajuste: ${d.fit}` : '',
+    ...feats.map(f => `✔️ ${f}`),
+    p.description ? `\n${p.description}` : '',
+    `\n🚚 ${settings.shippingNote}`,
+    `👉 Mira fotos, video y pide aquí: ${storeLink(p)}`,
+    `💬 O escríbenos al WhatsApp: wa.me/${settings.whatsapp}`,
+  ].filter(Boolean).join('\n');
+}
+function openPublish(p) {
+  pubProduct = p; $('#pubImg').src = CJ.image(p); $('#pubText').value = publishText(p);
+  $('#pubShare').hidden = !navigator.share; $('#pubDlg').showModal();
+}
+$('#pubClose').onclick = () => $('#pubDlg').close();
+$('#pubCopy').onclick = async () => {
+  try { await navigator.clipboard.writeText($('#pubText').value); toast('✓ Texto copiado. Pégalo en Marketplace'); }
+  catch (e) { $('#pubText').select(); toast('Selecciona y copia el texto'); }
+};
+$('#pubShare').onclick = async () => {
+  const p = pubProduct, text = $('#pubText').value, data = { title: p.name, text };
+  try {
+    if (p.image) {
+      const blob = await (await fetch(p.image)).blob(), file = new File([blob], `${p.name.replace(/\W+/g, '-')}.jpg`, { type: blob.type });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) data.files = [file];
+    }
+    await navigator.share(data);
+  } catch (e) { if (e.name !== 'AbortError') { $('#pubCopy').click(); } }
 };
 
 /* pedidos */

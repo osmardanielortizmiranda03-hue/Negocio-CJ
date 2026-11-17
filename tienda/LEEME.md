@@ -42,6 +42,16 @@ Prototipo 100% estático (HTML + JS sin framework, sin build). Abrir `index.html
   transcodificar a MP4 H.264 + póster (p. ej. Cloudinary, Mux o Bunny Stream).
 - Enlaces de YouTube, TikTok e Instagram se convierten a reproductor incrustado con `CJ.embed(url)`.
 
+**Pensado para celular (la mayoría de clientes llega desde Facebook Marketplace / WhatsApp)**
+- Enlace directo por prenda: `index.html#p=<id>` abre la ficha. En producción conviene una URL real por
+  producto (`/p/set-blanco`) renderizada en servidor con etiquetas Open Graph (`og:title`, `og:image`,
+  `og:price:amount`) para que el enlace muestre foto y precio al pegarlo en Marketplace/WhatsApp.
+- En celular la ficha es pantalla completa con barra de compra fija; barra "Mi bolsa" fija abajo;
+  categorías fijas al bajar; inputs a 16px (evita zoom en iPhone).
+- WhatsApp: si el navegador interno de Facebook/Instagram bloquea la ventana nueva, se abre en la misma pestaña.
+- Panel → Prendas → "📣 Publicar": arma texto para Marketplace con tallas disponibles, tela y enlace, y usa
+  Web Share API (comparte la foto + texto) o copia al portapapeles.
+
 **Mapa**: Leaflet 1.9.4 (en `vendor/`) con teselas de OpenStreetMap, búsqueda con Nominatim y GPS del navegador.
 El punto se envía como enlace `https://www.google.com/maps?q=lat,lng`. Se puede cambiar por Google Maps JS API
 si se consigue una API key. Nominatim tiene límite de uso (1 petición por segundo); para producción conviene
